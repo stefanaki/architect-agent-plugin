@@ -155,8 +155,8 @@
       "scanned_at": "2026-09-13"
     },
     "2026": {
-      "issues": 139,
-      "max_number": 139,
+      "issues": 156,
+      "max_number": 156,
       "failures": [],
       "needles": [
         "4067/2012",
@@ -164,7 +164,7 @@
         "nok_abbrev",
         "code_5306"
       ],
-      "scanned_at": "2026-09-13"
+      "scanned_at": "2026-10-01"
     }
   },
   "issues": [
