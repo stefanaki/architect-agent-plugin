@@ -1,0 +1,12 @@
+# Python runtime files
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Gazette downloads and discovery cache (datasets remain tracked)
+/plugins/architect-agent/regulations/gazette/pdf/
+/plugins/architect-agent/regulations/gazette/.cache/
+
+# macOS metadata
+.DS_Store
