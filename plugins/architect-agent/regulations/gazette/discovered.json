@@ -1,0 +1,2751 @@
+{
+  "scanned": {
+    "2015": {
+      "issues": 185,
+      "max_number": 185,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2012": {
+      "issues": 257,
+      "max_number": 257,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2013": {
+      "issues": 288,
+      "max_number": 288,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2014": {
+      "issues": 281,
+      "max_number": 281,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2016": {
+      "issues": 245,
+      "max_number": 245,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2017": {
+      "issues": 207,
+      "max_number": 207,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2018": {
+      "issues": 227,
+      "max_number": 227,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2019": {
+      "issues": 218,
+      "max_number": 218,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2020": {
+      "issues": 265,
+      "max_number": 265,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2021": {
+      "issues": 257,
+      "max_number": 257,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2022": {
+      "issues": 245,
+      "max_number": 245,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2023": {
+      "issues": 218,
+      "max_number": 218,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2024": {
+      "issues": 212,
+      "max_number": 212,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2025": {
+      "issues": 245,
+      "max_number": 245,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev"
+      ],
+      "scanned_at": "2026-09-13"
+    },
+    "2026": {
+      "issues": 139,
+      "max_number": 139,
+      "failures": [],
+      "needles": [
+        "4067/2012",
+        "nok_by_name",
+        "nok_abbrev",
+        "code_5306"
+      ],
+      "scanned_at": "2026-09-13"
+    }
+  },
+  "issues": [
+    {
+      "number": 99,
+      "year": 2012,
+      "search_id": 475901,
+      "published": "2012-05-02",
+      "pages": 2,
+      "fek": "Α΄ 99/2012",
+      "id": "FEK-A-99-2012",
+      "acts": [
+        {
+          "kind": "διορθ.",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 184,
+      "year": 2012,
+      "search_id": 460963,
+      "published": "2012-09-27",
+      "pages": 476,
+      "fek": "Α΄ 184/2012",
+      "id": "FEK-A-184-2012",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4081/2012"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": true
+    },
+    {
+      "number": 29,
+      "year": 2013,
+      "search_id": 481824,
+      "published": "2013-02-05",
+      "pages": 8,
+      "fek": "Α΄ 29/2013",
+      "id": "FEK-A-29-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4117/2013"
+        },
+        {
+          "kind": "ΠΝΠ",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 42,
+      "year": 2013,
+      "search_id": 485715,
+      "published": "2013-02-19",
+      "pages": 16,
+      "fek": "Α΄ 42/2013",
+      "id": "FEK-A-42-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4122/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 43,
+      "year": 2013,
+      "search_id": 484727,
+      "published": "2013-02-19",
+      "pages": 16,
+      "fek": "Α΄ 43/2013",
+      "id": "FEK-A-43-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4123/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 127,
+      "year": 2013,
+      "search_id": 478983,
+      "published": "2013-06-04",
+      "pages": 20,
+      "fek": "Α΄ 127/2013",
+      "id": "FEK-A-127-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4159/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 156,
+      "year": 2013,
+      "search_id": 477348,
+      "published": "2013-07-09",
+      "pages": 28,
+      "fek": "Α΄ 156/2013",
+      "id": "FEK-A-156-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4164/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 174,
+      "year": 2013,
+      "search_id": 490836,
+      "published": "2013-08-08",
+      "pages": 52,
+      "fek": "Α΄ 174/2013",
+      "id": "FEK-A-174-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4178/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 22,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 175,
+      "year": 2013,
+      "search_id": 490837,
+      "published": "2013-08-09",
+      "pages": 28,
+      "fek": "Α΄ 175/2013",
+      "id": "FEK-A-175-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4179/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 287,
+      "year": 2013,
+      "search_id": 487040,
+      "published": "2013-12-31",
+      "pages": 48,
+      "fek": "Α΄ 287/2013",
+      "id": "FEK-A-287-2013",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4223/2013"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 8,
+      "year": 2014,
+      "search_id": 494918,
+      "published": "2014-01-10",
+      "pages": 8,
+      "fek": "Α΄ 8/2014",
+      "id": "FEK-A-8-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4229/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 73,
+      "year": 2014,
+      "search_id": 511981,
+      "published": "2014-03-24",
+      "pages": 108,
+      "fek": "Α΄ 73/2014",
+      "id": "FEK-A-73-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4249/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 85,
+      "year": 2014,
+      "search_id": 510699,
+      "published": "2014-04-07",
+      "pages": 108,
+      "fek": "Α΄ 85/2014",
+      "id": "FEK-A-85-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4254/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 93,
+      "year": 2014,
+      "search_id": 508491,
+      "published": "2014-04-14",
+      "pages": 20,
+      "fek": "Α΄ 93/2014",
+      "id": "FEK-A-93-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4257/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 94,
+      "year": 2014,
+      "search_id": 508525,
+      "published": "2014-04-14",
+      "pages": 28,
+      "fek": "Α΄ 94/2014",
+      "id": "FEK-A-94-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4258/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 47,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 142,
+      "year": 2014,
+      "search_id": 505319,
+      "published": "2014-06-28",
+      "pages": 20,
+      "fek": "Α΄ 142/2014",
+      "id": "FEK-A-142-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4269/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 155,
+      "year": 2014,
+      "search_id": 507338,
+      "published": "2014-07-30",
+      "pages": 28,
+      "fek": "Α΄ 155/2014",
+      "id": "FEK-A-155-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4276/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 156,
+      "year": 2014,
+      "search_id": 507348,
+      "published": "2014-08-01",
+      "pages": 96,
+      "fek": "Α΄ 156/2014",
+      "id": "FEK-A-156-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4277/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 159,
+      "year": 2014,
+      "search_id": 508085,
+      "published": "2014-08-08",
+      "pages": 60,
+      "fek": "Α΄ 159/2014",
+      "id": "FEK-A-159-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4280/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 16,
+        "nok_by_name": 1,
+        "nok_abbrev": 1
+      },
+      "review": false
+    },
+    {
+      "number": 214,
+      "year": 2014,
+      "search_id": 516036,
+      "published": "2014-10-02",
+      "pages": 12,
+      "fek": "Α΄ 214/2014",
+      "id": "FEK-A-214-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4296/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 261,
+      "year": 2014,
+      "search_id": 502717,
+      "published": "2014-12-17",
+      "pages": 72,
+      "fek": "Α΄ 261/2014",
+      "id": "FEK-A-261-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4313/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 269,
+      "year": 2014,
+      "search_id": 500665,
+      "published": "2014-12-24",
+      "pages": 84,
+      "fek": "Α΄ 269/2014",
+      "id": "FEK-A-269-2014",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4315/2014"
+        }
+      ],
+      "hits": {
+        "4067/2012": 51,
+        "nok_by_name": 1,
+        "nok_abbrev": 1
+      },
+      "review": false
+    },
+    {
+      "number": 143,
+      "year": 2015,
+      "search_id": 518408,
+      "published": "2015-11-09",
+      "pages": 336,
+      "fek": "Α΄ 143/2015",
+      "id": "FEK-A-143-2015",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4342/2015"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 49,
+      "year": 2016,
+      "search_id": 534255,
+      "published": "2016-04-01",
+      "pages": 44,
+      "fek": "Α΄ 49/2016",
+      "id": "FEK-A-49-2016",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4373/2016"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 126,
+      "year": 2016,
+      "search_id": 536109,
+      "published": "2016-07-08",
+      "pages": 320,
+      "fek": "Α΄ 126/2016",
+      "id": "FEK-A-126-2016",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4404/2016"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 149,
+      "year": 2016,
+      "search_id": 540968,
+      "published": "2016-08-09",
+      "pages": 64,
+      "fek": "Α΄ 149/2016",
+      "id": "FEK-A-149-2016",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4414/2016"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 241,
+      "year": 2016,
+      "search_id": 540065,
+      "published": "2016-12-23",
+      "pages": 28,
+      "fek": "Α΄ 241/2016",
+      "id": "FEK-A-241-2016",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4447/2016"
+        }
+      ],
+      "hits": {
+        "4067/2012": 6,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 24,
+      "year": 2017,
+      "search_id": 546644,
+      "published": "2017-03-01",
+      "pages": 24,
+      "fek": "Α΄ 24/2017",
+      "id": "FEK-A-24-2017",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4456/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 56,
+      "year": 2017,
+      "search_id": 550506,
+      "published": "2017-04-13",
+      "pages": 12,
+      "fek": "Α΄ 56/2017",
+      "id": "FEK-A-56-2017",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4467/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 160,
+      "year": 2017,
+      "search_id": 543952,
+      "published": "2017-10-30",
+      "pages": 56,
+      "fek": "Α΄ 160/2017",
+      "id": "FEK-A-160-2017",
+      "acts": [
+        {
+          "kind": "π.δ.",
+          "number": "132/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 167,
+      "year": 2017,
+      "search_id": 546103,
+      "published": "2017-11-03",
+      "pages": 96,
+      "fek": "Α΄ 167/2017",
+      "id": "FEK-A-167-2017",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4495/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 43,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 178,
+      "year": 2017,
+      "search_id": 548123,
+      "published": "2017-11-22",
+      "pages": 4,
+      "fek": "Α΄ 178/2017",
+      "id": "FEK-A-178-2017",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4501/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 200,
+      "year": 2017,
+      "search_id": 548694,
+      "published": "2017-12-22",
+      "pages": 20,
+      "fek": "Α΄ 200/2017",
+      "id": "FEK-A-200-2017",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4508/2017"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 5,
+      "year": 2018,
+      "search_id": 566609,
+      "published": "2018-01-17",
+      "pages": 260,
+      "fek": "Α΄ 5/2018",
+      "id": "FEK-A-5-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4512/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 9,
+      "year": 2018,
+      "search_id": 569923,
+      "published": "2018-01-23",
+      "pages": 16,
+      "fek": "Α΄ 9/2018",
+      "id": "FEK-A-9-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4513/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 59,
+      "year": 2018,
+      "search_id": 566900,
+      "published": "2018-03-30",
+      "pages": 64,
+      "fek": "Α΄ 59/2018",
+      "id": "FEK-A-59-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4530/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 1,
+        "nok_abbrev": 1
+      },
+      "review": true
+    },
+    {
+      "number": 75,
+      "year": 2018,
+      "search_id": 573830,
+      "published": "2018-04-27",
+      "pages": 12,
+      "fek": "Α΄ 75/2018",
+      "id": "FEK-A-75-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4533/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 101,
+      "year": 2018,
+      "search_id": 569332,
+      "published": "2018-06-12",
+      "pages": 92,
+      "fek": "Α΄ 101/2018",
+      "id": "FEK-A-101-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4546/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 8,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 105,
+      "year": 2018,
+      "search_id": 569705,
+      "published": "2018-06-14",
+      "pages": 80,
+      "fek": "Α΄ 105/2018",
+      "id": "FEK-A-105-2018",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4549/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 114,
+      "year": 2018,
+      "search_id": 569753,
+      "published": "2018-06-29",
+      "pages": 12,
+      "fek": "Α΄ 114/2018",
+      "id": "FEK-A-114-2018",
+      "acts": [
+        {
+          "kind": "π.δ.",
+          "number": "59/2018"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 45,
+      "year": 2019,
+      "search_id": 567893,
+      "published": "2019-03-09",
+      "pages": 56,
+      "fek": "Α΄ 45/2019",
+      "id": "FEK-A-45-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4602/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 52,
+      "year": 2019,
+      "search_id": 573094,
+      "published": "2019-04-01",
+      "pages": 104,
+      "fek": "Α΄ 52/2019",
+      "id": "FEK-A-52-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4605/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 70,
+      "year": 2019,
+      "search_id": 578483,
+      "published": "2019-05-08",
+      "pages": 164,
+      "fek": "Α΄ 70/2019",
+      "id": "FEK-A-70-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4610/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 1
+      },
+      "review": true
+    },
+    {
+      "number": 128,
+      "year": 2019,
+      "search_id": 581027,
+      "published": "2019-07-31",
+      "pages": 4,
+      "fek": "Α΄ 128/2019",
+      "id": "FEK-A-128-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4621/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": true
+    },
+    {
+      "number": 167,
+      "year": 2019,
+      "search_id": 594134,
+      "published": "2019-10-31",
+      "pages": 136,
+      "fek": "Α΄ 167/2019",
+      "id": "FEK-A-167-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4635/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 193,
+      "year": 2019,
+      "search_id": 583798,
+      "published": "2019-12-03",
+      "pages": 32,
+      "fek": "Α΄ 193/2019",
+      "id": "FEK-A-193-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4643/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 9,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 204,
+      "year": 2019,
+      "search_id": 578780,
+      "published": "2019-12-16",
+      "pages": 32,
+      "fek": "Α΄ 204/2019",
+      "id": "FEK-A-204-2019",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4647/2019"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 1
+      },
+      "review": false
+    },
+    {
+      "number": 30,
+      "year": 2020,
+      "search_id": 555049,
+      "published": "2020-02-12",
+      "pages": 112,
+      "fek": "Α΄ 30/2020",
+      "id": "FEK-A-30-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4663/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 32,
+      "year": 2020,
+      "search_id": 555126,
+      "published": "2020-02-14",
+      "pages": 16,
+      "fek": "Α΄ 32/2020",
+      "id": "FEK-A-32-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4664/2020"
+        },
+        {
+          "kind": "ΠΝΠ",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 75,
+      "year": 2020,
+      "search_id": 599650,
+      "published": "2020-03-31",
+      "pages": 28,
+      "fek": "Α΄ 75/2020",
+      "id": "FEK-A-75-2020",
+      "acts": [
+        {
+          "kind": "ΠΝΠ",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 86,
+      "year": 2020,
+      "search_id": 604230,
+      "published": "2020-04-25",
+      "pages": 32,
+      "fek": "Α΄ 86/2020",
+      "id": "FEK-A-86-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4684/2020"
+        },
+        {
+          "kind": "ΠΝΠ",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 92,
+      "year": 2020,
+      "search_id": 604408,
+      "published": "2020-05-08",
+      "pages": 160,
+      "fek": "Α΄ 92/2020",
+      "id": "FEK-A-92-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4685/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 7,
+        "nok_by_name": 0,
+        "nok_abbrev": 11
+      },
+      "review": false
+    },
+    {
+      "number": 101,
+      "year": 2020,
+      "search_id": 604788,
+      "published": "2020-05-24",
+      "pages": 28,
+      "fek": "Α΄ 101/2020",
+      "id": "FEK-A-101-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4688/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 111,
+      "year": 2020,
+      "search_id": 578987,
+      "published": "2020-06-12",
+      "pages": 68,
+      "fek": "Α΄ 111/2020",
+      "id": "FEK-A-111-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4692/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 1
+      },
+      "review": true
+    },
+    {
+      "number": 130,
+      "year": 2020,
+      "search_id": 596740,
+      "published": "2020-07-06",
+      "pages": 168,
+      "fek": "Α΄ 130/2020",
+      "id": "FEK-A-130-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4702/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 142,
+      "year": 2020,
+      "search_id": 600772,
+      "published": "2020-07-23",
+      "pages": 52,
+      "fek": "Α΄ 142/2020",
+      "id": "FEK-A-142-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4710/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 181,
+      "year": 2020,
+      "search_id": 605415,
+      "published": "2020-09-18",
+      "pages": 44,
+      "fek": "Α΄ 181/2020",
+      "id": "FEK-A-181-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4726/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 245,
+      "year": 2020,
+      "search_id": 611218,
+      "published": "2020-12-10",
+      "pages": 156,
+      "fek": "Α΄ 245/2020",
+      "id": "FEK-A-245-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4759/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 90,
+        "nok_by_name": 2,
+        "nok_abbrev": 1
+      },
+      "review": false
+    },
+    {
+      "number": 256,
+      "year": 2020,
+      "search_id": 598084,
+      "published": "2020-12-23",
+      "pages": 72,
+      "fek": "Α΄ 256/2020",
+      "id": "FEK-A-256-2020",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4764/2020"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 15,
+      "year": 2021,
+      "search_id": 613531,
+      "published": "2021-01-29",
+      "pages": 40,
+      "fek": "Α΄ 15/2021",
+      "id": "FEK-A-15-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4770/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 31,
+      "year": 2021,
+      "search_id": 559157,
+      "published": "2021-02-28",
+      "pages": 172,
+      "fek": "Α΄ 31/2021",
+      "id": "FEK-A-31-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4781/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 1
+      },
+      "review": true
+    },
+    {
+      "number": 36,
+      "year": 2021,
+      "search_id": 600654,
+      "published": "2021-03-10",
+      "pages": 216,
+      "fek": "Α΄ 36/2021",
+      "id": "FEK-A-36-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4782/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 8,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 44,
+      "year": 2021,
+      "search_id": 618253,
+      "published": "2021-03-26",
+      "pages": 364,
+      "fek": "Α΄ 44/2021",
+      "id": "FEK-A-44-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4787/2021"
+        },
+        {
+          "kind": "ν.",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 5,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 63,
+      "year": 2021,
+      "search_id": 558828,
+      "published": "2021-04-17",
+      "pages": 64,
+      "fek": "Α΄ 63/2021",
+      "id": "FEK-A-63-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4796/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 110,
+      "year": 2021,
+      "search_id": 587746,
+      "published": "2021-07-01",
+      "pages": 76,
+      "fek": "Α΄ 110/2021",
+      "id": "FEK-A-110-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4812/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 129,
+      "year": 2021,
+      "search_id": 608618,
+      "published": "2021-07-23",
+      "pages": 180,
+      "fek": "Α΄ 129/2021",
+      "id": "FEK-A-129-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4819/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 39,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 134,
+      "year": 2021,
+      "search_id": 602745,
+      "published": "2021-07-31",
+      "pages": 68,
+      "fek": "Α΄ 134/2021",
+      "id": "FEK-A-134-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4821/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 207,
+      "year": 2021,
+      "search_id": 582185,
+      "published": "2021-11-05",
+      "pages": 64,
+      "fek": "Α΄ 207/2021",
+      "id": "FEK-A-207-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4849/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 220,
+      "year": 2021,
+      "search_id": 581409,
+      "published": "2021-11-20",
+      "pages": 40,
+      "fek": "Α΄ 220/2021",
+      "id": "FEK-A-220-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4858/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 228,
+      "year": 2021,
+      "search_id": 581620,
+      "published": "2021-11-27",
+      "pages": 20,
+      "fek": "Α΄ 228/2021",
+      "id": "FEK-A-228-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4859/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 237,
+      "year": 2021,
+      "search_id": 581667,
+      "published": "2021-12-02",
+      "pages": 68,
+      "fek": "Α΄ 237/2021",
+      "id": "FEK-A-237-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4864/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 1,
+        "nok_abbrev": 1
+      },
+      "review": false
+    },
+    {
+      "number": 247,
+      "year": 2021,
+      "search_id": 622758,
+      "published": "2021-12-11",
+      "pages": 48,
+      "fek": "Α΄ 247/2021",
+      "id": "FEK-A-247-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4872/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 6,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 251,
+      "year": 2021,
+      "search_id": 622993,
+      "published": "2021-12-24",
+      "pages": 136,
+      "fek": "Α΄ 251/2021",
+      "id": "FEK-A-251-2021",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4876/2021"
+        }
+      ],
+      "hits": {
+        "4067/2012": 5,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 23,
+      "year": 2022,
+      "search_id": 596301,
+      "published": "2022-02-12",
+      "pages": 12,
+      "fek": "Α΄ 23/2022",
+      "id": "FEK-A-23-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4890/2022"
+        },
+        {
+          "kind": "ΠΝΠ",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 46,
+      "year": 2022,
+      "search_id": 625364,
+      "published": "2022-03-05",
+      "pages": 44,
+      "fek": "Α΄ 46/2022",
+      "id": "FEK-A-46-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4903/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 63,
+      "year": 2022,
+      "search_id": 625622,
+      "published": "2022-03-24",
+      "pages": 56,
+      "fek": "Α΄ 63/2022",
+      "id": "FEK-A-63-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4915/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 99,
+      "year": 2022,
+      "search_id": 620984,
+      "published": "2022-05-20",
+      "pages": 36,
+      "fek": "Α΄ 99/2022",
+      "id": "FEK-A-99-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4933/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 11,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 105,
+      "year": 2022,
+      "search_id": 621159,
+      "published": "2022-05-28",
+      "pages": 32,
+      "fek": "Α΄ 105/2022",
+      "id": "FEK-A-105-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4936/2022"
+        },
+        {
+          "kind": "ν.",
+          "number": null
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 129,
+      "year": 2022,
+      "search_id": 607038,
+      "published": "2022-07-05",
+      "pages": 120,
+      "fek": "Α΄ 129/2022",
+      "id": "FEK-A-129-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4951/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 9,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 150,
+      "year": 2022,
+      "search_id": 618728,
+      "published": "2022-07-30",
+      "pages": 112,
+      "fek": "Α΄ 150/2022",
+      "id": "FEK-A-150-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4964/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 8,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 162,
+      "year": 2022,
+      "search_id": 585906,
+      "published": "2022-09-02",
+      "pages": 24,
+      "fek": "Α΄ 162/2022",
+      "id": "FEK-A-162-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4965/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 2
+      },
+      "review": false
+    },
+    {
+      "number": 195,
+      "year": 2022,
+      "search_id": 609488,
+      "published": "2022-10-15",
+      "pages": 60,
+      "fek": "Α΄ 195/2022",
+      "id": "FEK-A-195-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4982/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 204,
+      "year": 2022,
+      "search_id": 609460,
+      "published": "2022-10-28",
+      "pages": 68,
+      "fek": "Α΄ 204/2022",
+      "id": "FEK-A-204-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "4986/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 6,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 241,
+      "year": 2022,
+      "search_id": 624471,
+      "published": "2022-12-23",
+      "pages": 76,
+      "fek": "Α΄ 241/2022",
+      "id": "FEK-A-241-2022",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5007/2022"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 33,
+      "year": 2023,
+      "search_id": 603252,
+      "published": "2023-02-18",
+      "pages": 76,
+      "fek": "Α΄ 33/2023",
+      "id": "FEK-A-33-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5022/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 2
+      },
+      "review": false
+    },
+    {
+      "number": 41,
+      "year": 2023,
+      "search_id": 603216,
+      "published": "2023-02-25",
+      "pages": 28,
+      "fek": "Α΄ 41/2023",
+      "id": "FEK-A-41-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5024/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 78,
+      "year": 2023,
+      "search_id": 593799,
+      "published": "2023-03-29",
+      "pages": 284,
+      "fek": "Α΄ 78/2023",
+      "id": "FEK-A-78-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5037/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 16,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 79,
+      "year": 2023,
+      "search_id": 593443,
+      "published": "2023-03-30",
+      "pages": 28,
+      "fek": "Α΄ 79/2023",
+      "id": "FEK-A-79-2023",
+      "acts": [
+        {
+          "kind": "π.δ.",
+          "number": "36/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 8,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 83,
+      "year": 2023,
+      "search_id": 612269,
+      "published": "2023-04-03",
+      "pages": 136,
+      "fek": "Α΄ 83/2023",
+      "id": "FEK-A-83-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5039/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 3
+      },
+      "review": false
+    },
+    {
+      "number": 91,
+      "year": 2023,
+      "search_id": 623128,
+      "published": "2023-04-13",
+      "pages": 64,
+      "fek": "Α΄ 91/2023",
+      "id": "FEK-A-91-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5043/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 193,
+      "year": 2023,
+      "search_id": 609961,
+      "published": "2023-11-28",
+      "pages": 44,
+      "fek": "Α΄ 193/2023",
+      "id": "FEK-A-193-2023",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5069/2023"
+        }
+      ],
+      "hits": {
+        "4067/2012": 7,
+        "nok_by_name": 2,
+        "nok_abbrev": 3
+      },
+      "review": false
+    },
+    {
+      "number": 63,
+      "year": 2024,
+      "search_id": 765613,
+      "published": "2024-05-01",
+      "pages": 92,
+      "fek": "Α΄ 63/2024",
+      "id": "FEK-A-63-2024",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5106/2024"
+        }
+      ],
+      "hits": {
+        "4067/2012": 13,
+        "nok_by_name": 28,
+        "nok_abbrev": 5
+      },
+      "review": false
+    },
+    {
+      "number": 100,
+      "year": 2024,
+      "search_id": 767918,
+      "published": "2024-07-03",
+      "pages": 40,
+      "fek": "Α΄ 100/2024",
+      "id": "FEK-A-100-2024",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5116/2024"
+        }
+      ],
+      "hits": {
+        "4067/2012": 6,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 173,
+      "year": 2024,
+      "search_id": 773220,
+      "published": "2024-11-04",
+      "pages": 100,
+      "fek": "Α΄ 173/2024",
+      "id": "FEK-A-173-2024",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5151/2024"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 202,
+      "year": 2024,
+      "search_id": 774755,
+      "published": "2024-12-12",
+      "pages": 56,
+      "fek": "Α΄ 202/2024",
+      "id": "FEK-A-202-2024",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5164/2024"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 207,
+      "year": 2024,
+      "search_id": 775123,
+      "published": "2024-12-20",
+      "pages": 36,
+      "fek": "Α΄ 207/2024",
+      "id": "FEK-A-207-2024",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5167/2024"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 1,
+        "nok_abbrev": 4
+      },
+      "review": false
+    },
+    {
+      "number": 6,
+      "year": 2025,
+      "search_id": 776281,
+      "published": "2025-01-20",
+      "pages": 16,
+      "fek": "Α΄ 6/2025",
+      "id": "FEK-A-6-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5170/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 34,
+      "year": 2025,
+      "search_id": 778261,
+      "published": "2025-03-06",
+      "pages": 24,
+      "fek": "Α΄ 34/2025",
+      "id": "FEK-A-34-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5184/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 76,
+      "year": 2025,
+      "search_id": 781482,
+      "published": "2025-05-19",
+      "pages": 32,
+      "fek": "Α΄ 76/2025",
+      "id": "FEK-A-76-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5197/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 9,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 130,
+      "year": 2025,
+      "search_id": 784442,
+      "published": "2025-07-18",
+      "pages": 132,
+      "fek": "Α΄ 130/2025",
+      "id": "FEK-A-130-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5219/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 142,
+      "year": 2025,
+      "search_id": 785275,
+      "published": "2025-08-05",
+      "pages": 128,
+      "fek": "Α΄ 142/2025",
+      "id": "FEK-A-142-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5224/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 158,
+      "year": 2025,
+      "search_id": 786786,
+      "published": "2025-09-15",
+      "pages": 28,
+      "fek": "Α΄ 158/2025",
+      "id": "FEK-A-158-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5229/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 176,
+      "year": 2025,
+      "search_id": 788161,
+      "published": "2025-10-13",
+      "pages": 32,
+      "fek": "Α΄ 176/2025",
+      "id": "FEK-A-176-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5237/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 1,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 178,
+      "year": 2025,
+      "search_id": 788423,
+      "published": "2025-10-20",
+      "pages": 104,
+      "fek": "Α΄ 178/2025",
+      "id": "FEK-A-178-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5239/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 187,
+      "year": 2025,
+      "search_id": 788959,
+      "published": "2025-10-31",
+      "pages": 100,
+      "fek": "Α΄ 187/2025",
+      "id": "FEK-A-187-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5243/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 196,
+      "year": 2025,
+      "search_id": 789426,
+      "published": "2025-11-11",
+      "pages": 2,
+      "fek": "Α΄ 196/2025",
+      "id": "FEK-A-196-2025",
+      "acts": [
+        {
+          "kind": "π.δ.",
+          "number": "94/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 2,
+        "nok_abbrev": 0
+      },
+      "review": true
+    },
+    {
+      "number": 231,
+      "year": 2025,
+      "search_id": 791008,
+      "published": "2025-12-15",
+      "pages": 60,
+      "fek": "Α΄ 231/2025",
+      "id": "FEK-A-231-2025",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5261/2025"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0
+      },
+      "review": false
+    },
+    {
+      "number": 11,
+      "year": 2026,
+      "search_id": 793270,
+      "published": "2026-01-30",
+      "pages": 10,
+      "fek": "Α΄ 11/2026",
+      "id": "FEK-A-11-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5271/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 2,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 0
+      },
+      "review": false
+    },
+    {
+      "number": 64,
+      "year": 2026,
+      "search_id": 798152,
+      "published": "2026-04-29",
+      "pages": 150,
+      "fek": "Α΄ 64/2026",
+      "id": "FEK-A-64-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5297/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 0
+      },
+      "review": false
+    },
+    {
+      "number": 67,
+      "year": 2026,
+      "search_id": 798448,
+      "published": "2026-05-06",
+      "pages": 234,
+      "fek": "Α΄ 67/2026",
+      "id": "FEK-A-67-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5299/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 3,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 0
+      },
+      "review": false
+    },
+    {
+      "number": 74,
+      "year": 2026,
+      "search_id": 798933,
+      "published": "2026-05-15",
+      "pages": 132,
+      "fek": "Α΄ 74/2026",
+      "id": "FEK-A-74-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5301/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 4,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 0
+      },
+      "review": false
+    },
+    {
+      "number": 88,
+      "year": 2026,
+      "search_id": 800080,
+      "published": "2026-06-08",
+      "pages": 632,
+      "fek": "Α΄ 88/2026",
+      "id": "FEK-A-88-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5306/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 334,
+        "nok_by_name": 16,
+        "nok_abbrev": 0,
+        "code_5306": 8
+      },
+      "review": false
+    },
+    {
+      "number": 91,
+      "year": 2026,
+      "search_id": 800191,
+      "published": "2026-06-12",
+      "pages": 30,
+      "fek": "Α΄ 91/2026",
+      "id": "FEK-A-91-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5308/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 0
+      },
+      "review": false
+    },
+    {
+      "number": 102,
+      "year": 2026,
+      "search_id": 801177,
+      "published": "2026-06-26",
+      "pages": 104,
+      "fek": "Α΄ 102/2026",
+      "id": "FEK-A-102-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5313/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 9
+      },
+      "review": false
+    },
+    {
+      "number": 103,
+      "year": 2026,
+      "search_id": 801287,
+      "published": "2026-06-30",
+      "pages": 550,
+      "fek": "Α΄ 103/2026",
+      "id": "FEK-A-103-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5314/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 1,
+        "nok_by_name": 1,
+        "nok_abbrev": 0,
+        "code_5306": 15
+      },
+      "review": false
+    },
+    {
+      "number": 108,
+      "year": 2026,
+      "search_id": 802035,
+      "published": "2026-07-13",
+      "pages": 124,
+      "fek": "Α΄ 108/2026",
+      "id": "FEK-A-108-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5317/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 5
+      },
+      "review": false
+    },
+    {
+      "number": 109,
+      "year": 2026,
+      "search_id": 802038,
+      "published": "2026-07-13",
+      "pages": 140,
+      "fek": "Α΄ 109/2026",
+      "id": "FEK-A-109-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5318/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 6
+      },
+      "review": false
+    },
+    {
+      "number": 117,
+      "year": 2026,
+      "search_id": 802862,
+      "published": "2026-07-24",
+      "pages": 84,
+      "fek": "Α΄ 117/2026",
+      "id": "FEK-A-117-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5322/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 15
+      },
+      "review": false
+    },
+    {
+      "number": 121,
+      "year": 2026,
+      "search_id": 803159,
+      "published": "2026-07-31",
+      "pages": 112,
+      "fek": "Α΄ 121/2026",
+      "id": "FEK-A-121-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5324/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 3
+      },
+      "review": false
+    },
+    {
+      "number": 122,
+      "year": 2026,
+      "search_id": 803229,
+      "published": "2026-07-31",
+      "pages": 56,
+      "fek": "Α΄ 122/2026",
+      "id": "FEK-A-122-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5325/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 37
+      },
+      "review": false
+    },
+    {
+      "number": 134,
+      "year": 2026,
+      "search_id": 804811,
+      "published": "2026-09-04",
+      "pages": 28,
+      "fek": "Α΄ 134/2026",
+      "id": "FEK-A-134-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5329/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 25
+      },
+      "review": false
+    }
+  ]
+}

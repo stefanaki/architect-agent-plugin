@@ -1,0 +1,27 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "rhino": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "rhinomcp==0.4.1"
+      ],
+      "cwd": "${PLUGIN_ROOT}"
+    },
+    "revit": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-project",
+        "--python",
+        "3.13",
+        "--with-requirements",
+        "${PLUGIN_ROOT}/tools/revit/revit-mcp.extension/requirements.txt",
+        "${PLUGIN_ROOT}/tools/revit/revit-mcp.extension/main.py"
+      ],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  }
+}

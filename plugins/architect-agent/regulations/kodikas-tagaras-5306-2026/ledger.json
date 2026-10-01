@@ -1,0 +1,239 @@
+{
+ "law": "5306/2026",
+ "title": "Κώδικας Χωροταξίας - Πολεοδομίας «Νικόλαος Ταγαράς»",
+ "fek": "Α΄ 88/2026",
+ "from": "2026-06-08",
+ "generated": "2026-09-14",
+ "articles": {
+  "83": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "43",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "43#1"
+     ],
+     "targets": [
+      "83"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "100": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "44",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "44#1"
+     ],
+     "targets": [
+      "100"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "101": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "45",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "45#1"
+     ],
+     "targets": [
+      "101.1"
+     ],
+     "kind": "amend"
+    }
+   ]
+  },
+  "102": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "46",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "46#1"
+     ],
+     "targets": [
+      "102"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "105": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "47",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "47#1"
+     ],
+     "targets": [
+      "105"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "106": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "48",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "48#1"
+     ],
+     "targets": [
+      "106"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "109": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "49",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "49#1"
+     ],
+     "targets": [
+      "109.9"
+     ],
+     "kind": "amend"
+    }
+   ]
+  },
+  "110": {
+   "amended_in": [
+    {
+     "source": "FEK-A-122-2026",
+     "act": "Ν. 5325/2026",
+     "article": "50",
+     "published": "2026-07-31",
+     "paragraphs": [
+      "50#1"
+     ],
+     "targets": [
+      "110.β",
+      "110.ιβ",
+      "110.ιγ"
+     ],
+     "kind": "repeal"
+    }
+   ]
+  },
+  "199": {
+   "amended_in": [
+    {
+     "source": "FEK-A-117-2026",
+     "act": "Ν. 5322/2026",
+     "article": "56",
+     "published": "2026-07-24",
+     "paragraphs": [
+      "56.1"
+     ],
+     "targets": [
+      "199.3"
+     ],
+     "restates": true,
+     "kind": "amend"
+    }
+   ]
+  },
+  "199Α": {
+   "amended_in": [
+    {
+     "source": "FEK-A-117-2026",
+     "act": "Ν. 5322/2026",
+     "article": "57",
+     "published": "2026-07-24",
+     "paragraphs": [
+      "57#1"
+     ],
+     "targets": [
+      "199Α"
+     ],
+     "kind": "amend"
+    }
+   ]
+  },
+  "273": {
+   "amended_in": [
+    {
+     "source": "FEK-A-108-2026",
+     "act": "Ν. 5317/2026",
+     "article": "133",
+     "published": "2026-07-13",
+     "paragraphs": [
+      "133.1",
+      "133.2"
+     ],
+     "targets": [
+      "273.1"
+     ],
+     "kind": "amend"
+    }
+   ]
+  },
+  "327": {
+   "amended_in": [
+    {
+     "source": "FEK-A-102-2026",
+     "act": "Ν. 5313/2026",
+     "article": "9",
+     "published": "2026-06-26",
+     "paragraphs": [
+      "9.1"
+     ],
+     "targets": [
+      "327"
+     ],
+     "kind": "repeal"
+    }
+   ]
+  },
+  "438": {
+   "amended_in": [
+    {
+     "source": "FEK-A-108-2026",
+     "act": "Ν. 5317/2026",
+     "article": "133",
+     "published": "2026-07-13",
+     "paragraphs": [
+      "133.3"
+     ],
+     "targets": [
+      "438.5"
+     ],
+     "kind": "amend"
+    }
+   ]
+  }
+ }
+}
