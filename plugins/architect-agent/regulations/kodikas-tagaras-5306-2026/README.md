@@ -11,7 +11,8 @@ Section I (from article 195) holds the building rules that were in the NOK
 For the history of a rule before 8 June 2026, use the NOK dataset
 ([`../nok-4067-2012`](../nok-4067-2012/README.md)).
 
-The legal text is Greek and is not translated. The tooling is in [`../gazette`](../gazette/README.md).
+The legal text is Greek and is not translated. Agents and people query it with
+`scripts/regulations.py` (see the regulations skill). The tooling is in [`../gazette`](../gazette/README.md).
 
 ## Relation to the NOK
 
@@ -36,7 +37,7 @@ Code article 224, paragraph 4:
 
 Annex A has two legal functions. It tells where each old provision went. And article 477
 of the Code repeals **only** the provisions that Annex A lists. A provision that Annex A
-does not list is not repealed by the Code. The NOK ledger marks such paragraphs as
+does not list is not repealed by the Code. `../index.json` marks such NOK paragraphs as
 `not_codified`. Example: NOK article 27 §4 (mosques in Thrace, text of law 4759/2020
 article 120) is not in Annex A and not in the Code.
 
@@ -47,14 +48,16 @@ json/
   FEK-A-88-2026.json    the Code, 477 articles: text, paragraph ids, section path, Annex A sources (source of truth)
   FEK-A-<n>-<year>.json each later issue that cites the Code: only the relevant articles
 md/
-  FEK-A-<n>-<year>.md   the same files for reading, with notes (rendered from json/, the ledger and the crosswalk)
-ledger.json             for each Code article: the Gazette articles that amended it after 8 June 2026
-crosswalk.json          the links between NOK provisions and Code places, from Annex A
+  FEK-A-<n>-<year>.md   the same files for reading, with notes (rendered from json/ and ../index.json)
 ```
+
+The amendments of each Code article and the links to the NOK are in `../index.json`, shared
+by both datasets ([gazette README](../gazette/README.md#indexjson)).
 
 ## Linking the two datasets
 
-`crosswalk.json` is the only place that stores links between the datasets. An id names its dataset:
+`links` in `../index.json` is the only place that stores links between the datasets. An id
+names its dataset:
 
 ```json
 {"links": [
@@ -66,11 +69,11 @@ crosswalk.json          the links between NOK provisions and Code places, from A
 `nok:27.5` is paragraph 5 of NOK article 27, with the number that the paragraph had in the
 text in force on 8 June 2026, as Annex A cites it. The 2012 text in
 `../nok-4067-2012/json/FEK-A-79-2012.json` has the ids `27.1` to `27.4` only: paragraph 5 was
-added by ν. 4315/2014. Use `../nok-4067-2012/ledger.json` to find the amendment that gives the
+added by ν. 4315/2014. `amended_by` of `nok:27` in the index names the amendment that gives the
 text of such a paragraph. About one in six links names a paragraph or an article (10Α, 19Α,
 20Α, 26Α, 27Α, 32Α) that the 2012 text does not have; `validate code` lists them.
 `code:224.4` is paragraph 4 of Code article 224: file `json/FEK-A-88-2026.json`, paragraph ids
-starting with `224.4`. An id without a paragraph covers the whole article. The file also lists
+starting with `224.4`. An id without a paragraph covers the whole article. The index also lists
 the corrections to the printed Annex A (`errata`).
 
 The markdown of both datasets renders these links as notes («Now in the Code», «From the NOK»).
@@ -98,12 +101,13 @@ article has `path`, the section headings above it, for example
 `["ΜΕΡΟΣ Δ’ ΚΑΝΟΝΕΣ ΔΟΜΗΣΗΣ ΚΑΙ ΧΡΗΣΗΣ", "ΤΜΗΜΑ Ι ΓΕΝΙΚΟΙ ΚΑΝΟΝΕΣ ΔΟΜΗΣΗΣ - ΟΙΚΟΔΟΜΙΚΟΣ ΚΑΝΟΝΙΣΜΟΣ"]`,
 and `sources`, its Annex A rows.
 
-**Find later amendments.** Use `ledger.json`. The ledger says where to look, not what changed:
+**Find later amendments.** Use `amended_by` in `../index.json`, or `scripts/regulations.py history
+code:273.1`, which adds the text. A pointer says where to look, not what changed:
 
 ```json
-"273": {"amended_in": [
-  {"source": "FEK-A-108-2026", "act": "Ν. 5317/2026", "article": "133", "published": "2026-07-13",
-   "paragraphs": ["133.1"], "targets": ["273.1"], "kind": "amend"}]}
+"code:273": {"title": "Μεταβατικές διατάξεις", "at": 272, "amended_by": [
+  {"by": "FEK-A-108-2026:133", "act": "Ν. 5317/2026", "published": "2026-07-13",
+   "paragraphs": ["FEK-A-108-2026:133.1"], "targets": ["code:273.1"], "kind": "amend"}]}
 ```
 
 `targets` names the Code provisions that the amending sentence names. `restates: true`
@@ -120,16 +124,16 @@ means that the amending article gives the full new text of the Code article.
 ## Limits
 
 - The text is the Code as published on 8 June 2026. It is not a consolidation. Read the
-  amendments in `ledger.json` for changes after that date.
+  amendments in `../index.json` for changes after that date.
 - The Gazette prints article 400 («Παράρτημα - Τιμές προϋπολογισμού») and part of
   article 399 as images. The PDF has no text for them. The records have `missing_text`
   or `image_pages`. See the source PDF.
 - Annex A is read from the text layer of a table. Three printed errors and two rows that the
-  text layout breaks are corrected (`errata` in `crosswalk.json`). A few Code paragraphs that
+  text layout breaks are corrected (`errata` in `../index.json`). A few Code paragraphs that
   Annex A names do not match a paragraph id of the text, because the Code numbers some clauses
   differently from the table (article 207 «Περ. β)» is `207.1.β` in the text). `validate` lists them.
-- The ledger has one source only (the text matcher). There is no second table like Annex A
-  to confirm it.
+- The Code amendment pointers have one source only (the text matcher). There is no second table
+  like Annex A to confirm them.
 - Coverage is as good as discovery (`../gazette/discovered.json`, needle `code_5306`).
 
 ## Build

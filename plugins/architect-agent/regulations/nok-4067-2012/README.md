@@ -12,7 +12,8 @@ Use this dataset for what applied before that date, and to find where a rule
 came from. Use the Code dataset ([`../kodikas-tagaras-5306-2026`](../kodikas-tagaras-5306-2026/README.md))
 for the rules in force today. Its README explains the relation between the NOK, the Code and Annex A.
 
-The legal text is Greek and is not translated. The tooling is in [`../gazette`](../gazette/README.md).
+The legal text is Greek and is not translated. Agents and people query it with
+`scripts/regulations.py` (see the regulations skill). The tooling is in [`../gazette`](../gazette/README.md).
 
 ## Layout
 
@@ -21,11 +22,11 @@ json/
   FEK-A-79-2012.json    the NOK, 48 articles: text, paragraph ids, pages, metadata (source of truth)
   FEK-A-<n>-<year>.json each other issue that cites the NOK: only the relevant articles
 md/
-  FEK-A-<n>-<year>.md   the same files for reading, with notes (rendered from json/ and the ledger)
-ledger.json             for each NOK article: the Gazette articles that amended it
+  FEK-A-<n>-<year>.md   the same files for reading, with notes (rendered from json/ and ../index.json)
 ```
 
-The links to the Code are in the Code dataset: `../kodikas-tagaras-5306-2026/crosswalk.json`.
+The amendments of each NOK article and the links to the Code are in `../index.json`, shared by
+both datasets ([gazette README](../gazette/README.md#indexjson)).
 
 ## How to use it
 
@@ -52,31 +53,27 @@ other articles amend other laws or regulate separate planning matters (`scope: o
 Each JSON file has the metadata of its issue: `title`, `fek`, `published`, `source` (the PDF URL),
 `search_id`, `pages`, and for amending issues `cites`, `extract` and `review`.
 
-**Find the amendments of an article.** Use `ledger.json`:
+**Find the amendments of an article.** Use `amended_by` in `../index.json`, or
+`scripts/regulations.py history nok:27`, which adds the text:
 
 ```json
-"27": {
-  "title": "Ειδικές διατάξεις",
-  "not_codified": ["4"],
-  "amended_in": [
-    { "source": "FEK-A-174-2013", "act": "Ν. 4178/2013", "article": "48", "published": "2013-08-08",
-      "paragraphs": ["48.5"], "targets": ["27.4"], "status": "superseded",
-      "superseded_by": "FEK-A-245-2020 άρθ. 120" },
-    { "source": "FEK-A-245-2020", "act": "Ν. 4759/2020", "article": "120", "published": "2020-12-10",
-      "paragraphs": ["120#1"], "targets": ["27.2", "27.4", "27.6", "27.7"], "restates": true,
-      "status": "confirmed" }
-  ]
-}
+"nok:27": {"title": "Ειδικές διατάξεις", "at": 26, "not_codified": ["nok:27.4"], "amended_by": [
+  {"by": "FEK-A-174-2013:48", "act": "Ν. 4178/2013", "published": "2013-08-08",
+   "paragraphs": ["FEK-A-174-2013:48.5"], "targets": ["nok:27.4"], "kind": "amend",
+   "status": "superseded", "superseded_by": "FEK-A-245-2020:120"},
+  {"by": "FEK-A-245-2020:120", "act": "Ν. 4759/2020", "published": "2020-12-10",
+   "paragraphs": ["FEK-A-245-2020:120#1"], "targets": ["nok:27.2", "nok:27.4", "nok:27.6", "nok:27.7"],
+   "kind": "amend", "restates": true, "status": "confirmed"}]}
 ```
 
-The ledger says where to look, not what changed. `source` is a file in `json/` and `md/`.
+A pointer says where to look, not what changed. The file of `by` is in `json/` and `md/`.
 
 | field | meaning |
 |---|---|
-| `targets` | The NOK provisions that the amending sentence names: `27` (whole article), `27.4`, `11.6.ιδ`. Best effort. |
+| `targets` | The NOK provisions that the amending sentence names: `nok:27` (whole article), `nok:27.4`, `nok:11.6.ιδ`. Best effort. |
 | `restates` | The amending article gives the full new text of the NOK article. Read it for the article as it stood then. |
 | `not_codified` | Paragraphs that Annex A does not list and that no pointer repeals. The Code did not repeal them. Check them by hand. |
-| `repealed_in` | The pointer that repeals the whole article. |
+| `repealed_by` | The pointer that repeals the whole article. |
 
 | status | meaning |
 |---|---|
@@ -88,10 +85,10 @@ The ledger says where to look, not what changed. `source` is a file in `json/` a
 | `matcher` | Only the text matcher found it. Review it. |
 | `annex_a` | Only Annex A lists it. Review it. |
 
-**Find where a NOK paragraph is in the Code.** Use `../kodikas-tagaras-5306-2026/crosswalk.json`.
-It links `nok:27.5` to `code:224.4`. A link without a paragraph (`nok:3`) covers the whole article.
+**Find where a NOK paragraph is in the Code.** Use `links` in `../index.json`, or
+`scripts/regulations.py trace nok:27.5`. It links `nok:27.5` to `code:224.4`. A link without a paragraph (`nok:3`) covers the whole article.
 The paragraph number is the number in the text in force on 8 June 2026, not in the 2012 text.
-Paragraph 27 §5 is not in `json/FEK-A-79-2012.json`: ν. 4315/2014 added it. The ledger entry of
+Paragraph 27 §5 is not in `json/FEK-A-79-2012.json`: ν. 4315/2014 added it. `amended_by` of
 the article names that amendment.
 
 **Read an amending issue.** Open `md/FEK-A-<n>-<year>.md`. The `match` of each article:

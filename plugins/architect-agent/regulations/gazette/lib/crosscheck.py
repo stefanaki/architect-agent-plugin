@@ -1,4 +1,4 @@
-"""Check that NOK discovery and the NOK ledger are complete. Compare them with independent sources.
+"""Check that NOK discovery and the NOK amendment pointers (index.json) are complete. Compare them with independent sources.
 
   1. search      discovered.json: issues that contain «4067/2012» or a name of the NOK
   2. citations   «... του ν. 4067/2012, όπως τροποποιήθηκε/ισχύει με το άρθρο Χ του ν. Υ» inside the
@@ -9,7 +9,7 @@
   5. titles      articles whose title says that they amend the NOK
 
 A law that source 2, 3 or 4 names, but that is missing from source 1, is a coverage gap.
-An article of source 5 without a ledger pointer is a gap of the matcher.
+An article of source 5 without an amendment pointer (index.json) is a gap of the matcher.
 No source decides alone. Any gap fails the command.
 """
 import re
@@ -19,6 +19,7 @@ from common import issue_record, read_json, timeline
 from datasets import CODE_PUBLISHED, NOK
 from discover import ABBREV, PRIMARY, SECONDARY, load as load_discovered
 from ledger import TITLE_VERB
+import ids, index
 import annex_a
 
 # «όπως (η παρ. ...) τροποποιήθηκε/αντικαταστάθηκε/προστέθηκε/ισχύει ... με το άρθρο 58 του ν. 4964/2022 (Α΄ 150)»
@@ -70,7 +71,8 @@ def run() -> int:
 
     _, amended_by = annex_a.parse()
     annex_laws = {law for pairs in amended_by.values() for law, _ in pairs}
-    pointed = {(p["source"], p["article"]) for e in read_json(NOK.ledger)["articles"].values() for p in e["amended_in"]}
+    pointed = {ids.split(p["by"]) for g, e in index.load()["articles"].items() if g.startswith("nok:")
+               for p in e.get("amended_by", []) if p["by"]}
 
     gaps = False
     print("- laws that Annex A names as NOK amendments but NOT discovered:")
@@ -87,7 +89,7 @@ def run() -> int:
         gaps = True
         print(f"   MISSING {fek}   ({et[fek]})")
 
-    print("- articles whose title amends the NOK, but the ledger has NO pointer to them:")
+    print("- articles whose title amends the NOK, but index.json has NO amendment pointer to them:")
     mentions = 0
     for stem, doc in docs.items():
         if stem == NOK.main or doc["published"] >= CODE_PUBLISHED:
@@ -99,6 +101,6 @@ def run() -> int:
             if TITLE_VERB.search(a["title"]) and names_nok(a["title"]) and (stem, a["article"]) not in pointed:
                 gaps = True
                 print(f"   MISSING pointer {stem} article {a['article']}: {a['title'][:100]}")
-    print(f"- {mentions} files have no ledger pointer. They cite the NOK without amending it "
+    print(f"- {mentions} files have no amendment pointer. They cite the NOK without amending it "
           f"(see `match` of each article).")
     return 1 if gaps else 0

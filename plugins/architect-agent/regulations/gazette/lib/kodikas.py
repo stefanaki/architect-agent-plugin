@@ -4,15 +4,15 @@ The Code is the quoted text of «Άρθρο πρώτο» of law 5306/2026. write
 kodikas-tagaras-5306-2026/json/FEK-A-88-2026.json. Each article gets its section path and
 the Annex A rows that name its sources.
 
-write_crosswalk() writes kodikas-tagaras-5306-2026/crosswalk.json: each link between a NOK
-provision and a Code place that Annex A gives, for example {"nok": "nok:27.5", "code": "code:224.4"}.
-The crosswalk is the only place that stores links between the two datasets.
+crosswalk() returns each link between a NOK provision and a Code place that Annex A gives,
+for example {"nok": "nok:27.5", "code": "code:224.4"}. index.py stores them in index.json,
+the only place that stores links between the two datasets.
 """
-import datetime, re
+import re
 
 from common import PDF, fek_url, pdftotext, write_json
 from convert import paragraphs_json
-from datasets import CODE, CROSSWALK, NOK, heading_level
+from datasets import CODE, NOK, heading_level
 import annex_a, discover, extract
 
 CODE_PDF = PDF / f"{CODE.main}.pdf"
@@ -101,8 +101,8 @@ def write_text():
           f"without parsed text")
 
 
-def write_crosswalk():
-    """Write crosswalk.json from Annex A."""
+def crosswalk() -> list[dict]:
+    """Return the links of Annex A, in table order and without repeats."""
     links, seen = [], set()
     for r in annex_a.rows():
         para = (r["code_paragraph"] or "").rstrip(")")
@@ -112,13 +112,4 @@ def write_crosswalk():
             if (nok, code) not in seen:
                 seen.add((nok, code))
                 links.append({"nok": nok, "code": code})
-    write_json(CROSSWALK, {
-        "from": NOK.root.name, "to": CODE.root.name,
-        "source": "Annex A (Παράρτημα Α΄) of ΦΕΚ Α΄ 88/2026: ΠΙΝΑΚΑΣ ΚΩΔΙΚΟΠΟΙΗΤΙΚΩΝ - ΚΩΔΙΚΟΠΟΙΟΥΜΕΝΩΝ ΔΙΑΤΑΞΕΩΝ",
-        "ids": "nok:<article>[.<paragraph>] and code:<article>[.<paragraph>]. No paragraph means the whole article. "
-               "A NOK paragraph number is the number in the text in force on 8 June 2026, as Annex A cites it. "
-               "The 2012 text can lack it. Use the ledger to find the amendment that added or renumbered it.",
-        "errata": [{"printed": w, "corrected": c} for w, c in annex_a.ERRATA],
-        "generated": datetime.date.today().isoformat(),
-        "links": links})
-    print(f"-> {CROSSWALK.name}: {len(links)} links")
+    return links

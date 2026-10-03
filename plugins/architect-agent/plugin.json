@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "architect-agent",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Architecture workflows for Codex: engineer setup, CAD tools, and Greek building regulations in local projects.",
   "author": {"name": "stefanaki", "url": "https://github.com/stefanaki"},
   "repository": "https://github.com/stefanaki/architect-agent-plugin",

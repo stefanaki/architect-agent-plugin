@@ -17,15 +17,16 @@ Checks for each JSON file:
 The Code text: articles 1 to 477, titles equal to the contents entries, coverage per article (a
 warning only on pages with a broken text layer), and each Code paragraph that Annex A names is in
 the text.
-Ledgers: each pointer resolves. Crosswalk: each id is well formed and names an existing article.
-A paragraph that the text does not have gives a warning.
+index.json: each global id is well formed; each position points at its paragraph; each amendment
+pointer resolves; each Annex A link names an existing article (a paragraph that the text does not
+have gives a warning); an article number occurs once in each issue, so that a FEK id names one article.
 """
 import re
 from collections import Counter
 
 from common import PDF, degreekify, pdftotext, read_json
-from datasets import CODE, CROSSWALK, NOK, Dataset, split_ref
-import extract, render
+from datasets import CODE, INDEX, NOK, Dataset
+import extract, ids, index, render
 
 NOISE = [
     (re.compile(r"ΕΦΗΜΕΡΙ[ΣΔ∆]"), "Gazette header"),
@@ -131,13 +132,14 @@ def noise(texts, errors, warnings):
                 (warnings if "Latin" in what else errors).append(f"noise ({what}): ...{ctx}...")
 
 
-def check_md(ds: Dataset, doc: dict, notes, errors):
+def check_md(ds: Dataset, doc: dict, view: tuple, errors):
+    """`view` is (NOK notes, index), the inputs of render.markdown besides the document."""
     path = ds.md_path(doc["file"])
-    if not path.exists() or path.read_text(encoding="utf-8") != render.markdown(ds, doc, notes):
+    if not path.exists() or path.read_text(encoding="utf-8") != render.markdown(ds, doc, *view):
         errors.append(f"md: {ds.root.name}/md/{doc['file']}.md is not the current rendering. Run: render {ds.key}")
 
 
-def check_issue(ds: Dataset, doc: dict, notes) -> tuple[list[str], list[str]]:
+def check_issue(ds: Dataset, doc: dict, view: tuple) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     ident = doc["file"]
     kept = [a for act in doc["acts"] for a in act["articles"]]
@@ -154,7 +156,9 @@ def check_issue(ds: Dataset, doc: dict, notes) -> tuple[list[str], list[str]]:
         dup = [i for i, n in Counter(p["id"] for p in a["paragraphs"]).items() if n > 1]
         if dup:
             errors.append(f"ids: article {a.get('label') or a['article']}: repeated ids {dup[:5]}")
-    check_md(ds, doc, notes, errors)
+    errors += [f"ids: article {n} occurs in {c} acts, so {ident}:{n} is ambiguous"
+               for n, c in Counter(a["article"] for a in kept).items() if c > 1]
+    check_md(ds, doc, view, errors)
 
     pdf = PDF / f"{ident}.pdf"
     broken = extract.broken_pages(pdf)
@@ -213,12 +217,12 @@ def check_issue(ds: Dataset, doc: dict, notes) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def check_code_text(doc: dict) -> tuple[list[str], list[str]]:
+def check_code_text(doc: dict, view: tuple) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     arts = doc["articles"]
     noise([a["title"] for a in arts] + [h for a in arts for h in a["path"]]
           + [p["text"] for a in arts for p in a["paragraphs"]], errors, warnings)
-    check_md(CODE, doc, None, errors)
+    check_md(CODE, doc, view, errors)
     pdf = PDF / f"{CODE.main}.pdf"
     broken = extract.broken_pages(pdf)
     invented([a["title"] for a in arts] + [p["text"] for a in arts for p in a["paragraphs"]], pdf, errors, warnings,
@@ -289,48 +293,51 @@ def check_code_text(doc: dict) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def pointer_article(ds: Dataset, p: dict, docs: dict, tag: str, errors: list) -> dict | None:
+def pointer_article(p: dict, docs: dict, tag: str, errors: list) -> dict | None:
     """Return the amending article of a pointer, or None with an error."""
-    if p["source"] not in docs:
-        f = ds.json_path(p["source"])
-        docs[p["source"]] = read_json(f) if f.exists() else None
-    doc = docs[p["source"]]
+    source, article = ids.split(p["by"])
+    if source not in docs:
+        f = next((ds.json_path(source) for ds in (NOK, CODE) if ds.json_path(source).exists()), None)
+        docs[source] = read_json(f) if f else None
+    doc = docs[source]
     if doc is None:
         errors.append(f"{tag}: file does not exist")
         return None
-    art = next((a for act in doc["acts"] for a in act["articles"] if a["article"] == p["article"]), None)
+    art = next((a for act in doc["acts"] for a in act["articles"] if a["article"] == article), None)
     if art is None:
         errors.append(f"{tag}: article is not in the file")
         return None
-    have = {x["id"] for x in art["paragraphs"]}
+    have = {ids.make(source, x["id"]) for x in art["paragraphs"]}
     errors += [f"{tag}: paragraph {pid} does not exist" for pid in p.get("paragraphs", []) if pid not in have]
     return art
 
 
-def check_ledger(ds: Dataset) -> list[str]:
-    """Check that each pointer resolves, and that its targets are in the article of the entry.
+def check_pointers(ds: Dataset, idx: dict) -> list[str]:
+    """Check that each pointer of a dataset resolves, and that its targets are in the article of the entry.
 
     NOK: the article text must name the NOK article (except status annex_a). A superseded pointer
     names a later confirmed pointer of the same article.
     """
-    if not ds.ledger.exists():
-        return [f"ledger: {ds.root.name}/ledger.json does not exist"]
     errors, docs = [], {}
-    for num, entry in read_json(ds.ledger)["articles"].items():
+    for gid, entry in idx["articles"].items():
+        key, num = ids.split(gid)
+        if key != ds.key:
+            continue
+        pointers = entry.get("amended_by", [])
         name = re.compile(rf"(?:άρθρ(?:ο|ου|α|ων)|προστίθεται\s+άρθρο)[^.]{{0,40}}?\b{re.escape(num)}(?![\dΑ-Ω])")
-        confirmed = {f"{p['source']} άρθ. {p['article']}" for p in entry["amended_in"] if p.get("status") == "confirmed"}
-        if not all(x.isdigit() for x in entry.get("not_codified", [])):
-            errors.append(f"ledger: {num}: bad not_codified {entry['not_codified']}")
-        for p in entry["amended_in"]:
-            tag = f"ledger: {ds.key} {num} -> {p['source']} article {p['article']}"
-            errors += [f"{tag}: target {t} is not in article {num}" for t in p.get("targets", []) if t.split(".")[0] != num]
+        confirmed = {p["by"] for p in pointers if p.get("status") == "confirmed"}
+        if not all(ids.within(x, gid) and x.rsplit(".", 1)[1].isdigit() for x in entry.get("not_codified", [])):
+            errors.append(f"index: {gid}: bad not_codified {entry['not_codified']}")
+        for p in pointers:
+            tag = f"index: {gid} <- {p['by'] or p['act'] + ' άρθ. ' + p['article']}"
+            errors += [f"{tag}: target {t} is not in {gid}" for t in p.get("targets", []) if not ids.within(t, gid)]
             if p.get("status") == "superseded" and p.get("superseded_by") not in confirmed:
                 errors.append(f"{tag}: superseded_by «{p.get('superseded_by')}» is not a confirmed pointer")
-            if not p["source"]:
+            if not p["by"]:
                 if p.get("status") != "annex_a":
                     errors.append(f"{tag}: no source file")
                 continue
-            art = pointer_article(ds, p, docs, tag, errors)
+            art = pointer_article(p, docs, tag, errors)
             if art is not None and ds is NOK and p["status"] != "annex_a":
                 text = re.sub(r"\s+", " ", art["title"] + " " + " ".join(x["text"] for x in art["paragraphs"]))
                 if not name.search(text):
@@ -338,49 +345,97 @@ def check_ledger(ds: Dataset) -> list[str]:
     return errors
 
 
-def has_paragraph(ids: set[str], article: str, para: str) -> bool:
-    prefix = f"{article}.{para}"
-    return any(i == prefix or i.startswith(prefix + ".") or i.startswith(prefix + "#") for i in ids)
+def check_positions(ds: Dataset, idx: dict) -> list[str]:
+    """Check that the base text of a dataset and its positions in the index agree, both ways."""
+    base = ids.acts(ds.load(ds.main))[0]["articles"]
+    errors, seen = [], 0
+    for gid, (k, j) in idx["paragraphs"].items():
+        key, local = ids.split(gid)
+        if key != ds.key:
+            continue
+        seen += 1
+        try:
+            ok = base[k]["paragraphs"][j]["id"] == local
+        except IndexError:
+            ok = False
+        if not ok:
+            errors.append(f"index: position {[k, j]} of {gid} does not point at it")
+    total = sum(len(a["paragraphs"]) for a in base)
+    if seen != total:
+        errors.append(f"index: {seen} {ds.key} positions for {total} paragraphs of the text")
+    for k, a in enumerate(base):
+        if idx["articles"].get(ids.make(ds.key, a["article"]), {}).get("at") != k:
+            errors.append(f"index: article {ds.key}:{a['article']} has no position {k}")
+    return errors
 
 
-def check_crosswalk() -> tuple[list[str], list[str]]:
-    """Check that each crosswalk id is well formed and names an existing article of its dataset.
+def check_files(ds: Dataset, idx: dict) -> list[str]:
+    """Check that the file list of the index is the JSON files of the dataset."""
+    on_disk = {p.stem for p in ds.json_paths()}
+    listed = {k for k, v in idx["files"].items() if v["dataset"] == ds.key}
+    return [f"index: file {f} is not in the index" for f in sorted(on_disk - listed)] + \
+        [f"index: file {f} does not exist" for f in sorted(listed - on_disk)]
+
+
+def check_links(idx: dict) -> tuple[list[str], list[str]]:
+    """Check that each Annex A link is well formed and names an existing article of its dataset.
 
     A paragraph that the text does not have gives a warning. NOK paragraph numbers come from
     the text in force at codification, so the 2012 text can lack them.
     """
-    if not CROSSWALK.exists():
-        return [f"crosswalk: {CROSSWALK.name} does not exist"], []
     for ds in (NOK, CODE):
         if not ds.json_path(ds.main).exists():
-            return [f"crosswalk: {ds.root.name}/json/{ds.main}.json does not exist. Run: fetch {ds.key}"], []
-    nok_articles = set(read_json(NOK.ledger)["articles"]) if NOK.ledger.exists() else set()
-    nok_text = {a["article"]: {p["id"] for p in a["paragraphs"]} for a in NOK.load(NOK.main)["acts"][0]["articles"]}
-    code_text = {a["article"]: {p["id"] for p in a["paragraphs"]} for a in CODE.load(CODE.main)["articles"]}
+            return [f"links: {ds.root.name}/json/{ds.main}.json does not exist. Run: fetch {ds.key}"], []
+    nok_articles = {ids.split(g)[1] for g in idx["articles"] if g.startswith("nok:")}
+    nok_text, code_text = ({a["article"]: {p["id"] for p in a["paragraphs"]}
+                            for a in ids.acts(ds.load(ds.main))[0]["articles"]} for ds in (NOK, CODE))
     nok_articles |= set(nok_text)
     errors, warnings, seen, missing = [], [], set(), {"nok": [], "code": []}
-    for link in read_json(CROSSWALK)["links"]:
+    for link in idx["links"]:
         pair = (link["nok"], link["code"])
         if pair in seen:
-            errors.append(f"crosswalk: repeated link {pair}")
+            errors.append(f"links: repeated link {pair}")
         seen.add(pair)
         for ref, key, known, text in ((link["nok"], "nok", nok_articles, nok_text),
                                       (link["code"], "code", set(code_text), code_text)):
-            k, article, para = split_ref(ref)
             # A paragraph can have a letter: Code definitions «Περ. 7Α» give "code:197.7Α".
-            if k != key or not re.fullmatch(rf"{key}:\d+[Α-Ω]?(?:\.(?:\d+[Α-Ω]?|[α-ω]+))?", ref):
-                errors.append(f"crosswalk: bad id «{ref}»")
-            elif article not in known:
-                errors.append(f"crosswalk: «{ref}»: article {article} is not in the {key} dataset")
-            elif para and article in text and not has_paragraph(text[article], article, para):
+            if not re.fullmatch(rf"{key}:\d+[Α-Ω]?(?:\.(?:\d+[Α-Ω]?|[α-ω]+))?", ref):
+                errors.append(f"links: bad id «{ref}»")
+                continue
+            local = ids.split(ref)[1]
+            article = ids.article(local)
+            if article not in known:
+                errors.append(f"links: «{ref}»: article {article} is not in the {key} dataset")
+            elif local != article and article in text and not any(ids.within(i, local) for i in text[article]):
                 missing[key].append(ref)
     if missing["nok"]:
-        warnings.append(f"crosswalk: {len(missing['nok'])} NOK paragraphs are not in the 2012 text (numbering of the "
+        warnings.append(f"links: {len(missing['nok'])} NOK paragraphs are not in the 2012 text (numbering of the "
                         f"text in force at codification): {', '.join(missing['nok'][:8])} ...")
     if missing["code"]:
-        warnings.append(f"crosswalk: {len(missing['code'])} Code paragraphs are not in the Code text: "
+        warnings.append(f"links: {len(missing['code'])} Code paragraphs are not in the Code text: "
                         f"{', '.join(missing['code'][:8])}")
     return errors, warnings
+
+
+def check_index(ds: Dataset, idx: dict) -> tuple[list[str], list[str]]:
+    """Check the part of index.json that belongs to a dataset. The Annex A links belong to the Code."""
+    if not idx:
+        return [f"index: {INDEX.name} does not exist. Run: index"], []
+    errors = [f"index: bad id «{g}»" for g in [*idx["articles"], *idx["paragraphs"]]
+              if g.startswith(ds.key + ":") and not valid_id(g)]
+    errors += check_files(ds, idx) + check_positions(ds, idx) + check_pointers(ds, idx)
+    warnings = []
+    if ds is CODE:
+        e, warnings = check_links(idx)
+        errors += e
+    return errors, warnings
+
+
+def valid_id(gid: str) -> bool:
+    try:
+        return ids.normalize(gid) == gid
+    except ValueError:
+        return False
 
 
 def report(name: str, errors: list[str], warnings: list[str], limit: int = 5) -> bool:
@@ -393,8 +448,9 @@ def report(name: str, errors: list[str], warnings: list[str], limit: int = 5) ->
 
 
 def run(ds: Dataset, only: set[str] = frozenset()) -> int:
-    """Check the files of a dataset, its ledger and (for the Code) the crosswalk. Return the number of failures."""
-    notes = render.nok_notes() if ds is NOK else None
+    """Check the files of a dataset and its part of index.json. Return the number of failures."""
+    idx = index.load()
+    view = (render.nok_notes(idx) if ds is NOK else None, idx)
     failed, files = 0, 0
     for path in ds.json_paths():
         if only and path.stem not in only:
@@ -402,12 +458,10 @@ def run(ds: Dataset, only: set[str] = frozenset()) -> int:
         doc = read_json(path)
         files += 1
         if ds is CODE and path.stem == CODE.main:
-            failed += report(path.stem, *check_code_text(doc), limit=10)
+            failed += report(path.stem, *check_code_text(doc, view), limit=10)
         else:
-            failed += report(path.stem, *check_issue(ds, doc, notes))
+            failed += report(path.stem, *check_issue(ds, doc, view))
     print(f"\n{files - failed}/{files} files without errors")
     if not only:
-        failed += report("ledger.json", check_ledger(ds), [])
-        if ds is CODE:
-            failed += report(CROSSWALK.name, *check_crosswalk())
+        failed += report(f"{INDEX.name} ({ds.key})", *check_index(ds, idx))
     return failed

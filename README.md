@@ -38,11 +38,10 @@ Git marketplace refresh provides over-the-air delivery; silent background update
 behavior depends on the Codex client and workspace policy.
 
 Legal text is Greek; other instructions are English. Regulations are Gazette
-snapshots, not consolidated law or a live feed. The regulations skill traces
-amendments and Code/NOK links.
-Coverage comes from the Gazette CLI's `regulations/gazette/discovered.json`
-scan records and the `published` metadata in each dataset's `json/` files.
-The skill never modifies the datasets during an engineer's task.
+texts, not consolidated law. The bundled datasets are the record the skill answers
+from, offline: it queries them with `scripts/regulations.py` (search, text,
+amendment history, Code/NOK links) and states in each answer how far the Gazette
+was checked. The skill never modifies the datasets during an engineer's task.
 
 The manifests, three skills (setup, CAD and regulations), adapters and datasets
 are under `plugins/architect-agent/`. Installation and updates use the Git
@@ -77,5 +76,6 @@ python3 gazette/cli.py discover 2012 2026
 python3 gazette/cli.py build all
 ```
 
-Use the current year as the discovery end year. Commit the generated data after
-the build checks pass. No separate coverage snapshot or checksum file needs updating.
+Use the current year as the discovery end year. Then run the query tests
+(`python3 -m unittest discover -s plugins/architect-agent/tests`) and commit the
+generated data, including `regulations/index.json`, after the build checks pass. No separate coverage snapshot or checksum file needs updating.

@@ -6,9 +6,9 @@
 Each dataset folder holds only data:
   json/<id>.json    the source of truth: text, paragraph ids, metadata
   md/<id>.md        a rendered view of the JSON. No module reads it.
-  ledger.json       for each article, the Gazette articles that amend it
-The Code dataset also holds crosswalk.json: the links between NOK and Code provisions (Annex A).
-An id in the crosswalk names its dataset: "nok:27.5", "code:224.4".
+regulations/index.json holds what links the files: the amendments of each article and the
+links between NOK and Code provisions (Annex A), with global ids such as "nok:27.5", "code:224.4"
+(see ids.py).
 """
 import re
 from dataclasses import dataclass, field
@@ -23,7 +23,7 @@ CODE_PUBLISHED = "2026-06-08"
 
 @dataclass(frozen=True)
 class Dataset:
-    key: str                         # "nok" or "code". Also the prefix of ids in crosswalk.json.
+    key: str                         # "nok" or "code". Also the prefix of its global ids.
     root: Path
     law: str                         # "4067/2012"
     main: str                        # The file id of the act itself, e.g. "FEK-A-79-2012".
@@ -43,10 +43,6 @@ class Dataset:
     @property
     def md_dir(self) -> Path:
         return self.root / "md"
-
-    @property
-    def ledger(self) -> Path:
-        return self.root / "ledger.json"
 
     def json_path(self, ident: str) -> Path:
         return self.json_dir / f"{ident}.json"
@@ -74,7 +70,7 @@ CODE = Dataset(
     primary=discover.CODE, names=(discover.PRIMARY, discover.SECONDARY, discover.ABBREV))
 
 DATASETS = {"nok": NOK, "code": CODE}
-CROSSWALK = CODE.root / "crosswalk.json"
+INDEX = REGULATIONS / "index.json"
 
 # Issues that match a needle but do not refer to the NOK. Each entry was checked by hand.
 FALSE_MATCHES = {
@@ -105,10 +101,3 @@ def md_link(to: Dataset, ident: str, article: str | None = None) -> str:
     """Return the relative link from any md file to an md file of a dataset, with an article anchor."""
     anchor = f"#άρθρο-{article.lower()}" if article else ""
     return f"../../{to.root.name}/md/{ident}.md{anchor}"
-
-
-def split_ref(ref: str) -> tuple[str, str, str]:
-    """Split a crosswalk id: "nok:27.5" -> ("nok", "27", "5"), "code:198" -> ("code", "198", "")."""
-    key, _, pid = ref.partition(":")
-    article, _, para = pid.partition(".")
-    return key, article, para

@@ -1,8 +1,9 @@
 # gazette — tooling for the Government Gazette datasets
 
-This folder builds the datasets in `regulations/` from the Greek Government
-Gazette (ΦΕΚ Α΄). It holds all code, the downloaded PDFs and the discovery record.
-The dataset folders hold only data.
+This folder builds the datasets in `regulations/` and `regulations/index.json` from the
+Greek Government Gazette (ΦΕΚ Α΄). It holds all code, the downloaded PDFs and the discovery
+record. The dataset folders hold only data. Agents read the data only through
+`scripts/regulations.py`, which imports `lib/ids.py` and nothing else from here.
 
 | Dataset | Folder | Law |
 |---|---|---|
@@ -23,12 +24,14 @@ gazette/
     datasets.py       the two datasets: folders, laws, issue selection, links
     extract.py        PDF -> acts, articles, paragraphs (from the position of each line)
     convert.py        articles -> JSON with paragraph ids and metadata
-    kodikas.py        the Code text, and crosswalk.json from its Annex A
+    kodikas.py        the Code text, and the NOK -> Code links from its Annex A
     annex_a.py        read Annex A of the Code (with checked corrections, ERRATA)
-    ledger.py         ledger.json of each dataset
-    render.py         JSON -> markdown, with notes from the ledger and the crosswalk
+    ledger.py         the amendment pointers of each dataset (the matcher)
+    ids.py            the global id grammar, input normalization and citations (standard library only)
+    index.py          ../index.json: pointers, links and positions by global id
+    render.py         JSON -> markdown, with notes from index.json
     validate.py       checks of each dataset
-    crosscheck.py     completeness of NOK discovery and of the NOK ledger
+    crosscheck.py     completeness of NOK discovery and of the NOK amendment pointers
   pdf/                every issue that discovery matched (git-ignored)
   discovered.json     the issues found, and the years scanned
 ```
@@ -39,21 +42,44 @@ gazette/
 python3 gazette/cli.py discover 2012 2026 [--force]   # scan the issues. Skips years scanned with the same needles.
 python3 gazette/cli.py build all                       # everything below, for both datasets
 python3 gazette/cli.py fetch nok|code [ID ...]         # PDFs -> <dataset>/json/
-python3 gazette/cli.py crosswalk                       # Annex A -> kodikas-tagaras-5306-2026/crosswalk.json
-python3 gazette/cli.py ledger nok|code                 # <dataset>/ledger.json
+python3 gazette/cli.py index                           # amendment pointers + Annex A links -> index.json
 python3 gazette/cli.py render nok|code [ID ...]        # <dataset>/json/ -> <dataset>/md/
 python3 gazette/cli.py validate nok|code [ID ...]      # fails on any error
 python3 gazette/cli.py crosscheck                      # NOK completeness against independent sources
 ```
 
-`build` runs in stages: fetch, crosswalk, ledger, render, validate, crosscheck. `discover`
+`build` runs in stages: fetch, index, render, validate, crosscheck. `discover`
 and `crosscheck` need the network. `fetch nok` asks the API for the record of ΦΕΚ Α΄ 79/2012.
 The other commands download a PDF only if it is missing. Requirements: `pdftotext` (poppler)
 and Python 3.10 or later. No Python packages.
 
-The JSON files are the source of truth. The markdown files are a rendered view: no module
-reads them. After you change a JSON file or a ledger, run `render`. `validate` fails if a
+The JSON files are the source of truth. The markdown files are a rendered view for people: no
+module reads them. After you change a JSON file or the index, run `render`. `validate` fails if a
 markdown file is not the current rendering of its JSON file.
+
+## index.json
+
+`regulations/index.json` holds what links the files, by global id (`lib/ids.py`), and no legal text:
+
+| id | names |
+|---|---|
+| `code:224.3.β` | article 224, paragraph 3, case β of the Code text (`FEK-A-88-2026`) |
+| `nok:27.5` | article 27, paragraph 5 of the NOK (`FEK-A-79-2012`) |
+| `FEK-A-108-2026:133.1` | article 133, paragraph 1 of another issue |
+
+The part after `:` is the paragraph id of the file (see [Paragraph ids](#paragraph-ids)). An
+article number occurs once in each issue (`validate` checks it), so a FEK id names one article.
+
+| key | holds |
+|---|---|
+| `updated` | how far discovery checked the Gazette: the last issue of the last year scanned, and the scan date |
+| `datasets`, `files` | the two base texts, and the dataset, ΦΕΚ and publication date of each JSON file |
+| `articles` | each article of the two base texts: `title`, `at` (position in the file), `amended_by`, and for the NOK `not_codified` and `repealed_by` |
+| `paragraphs` | each paragraph of the two base texts: `[article position, paragraph position]` |
+| `links`, `errata` | the NOK -> Code links of Annex A, and the corrections to the printed table |
+
+`index.py` documents the fields of a pointer. The file has one record per line, so a rebuild
+gives a small diff.
 
 ## Discovery
 
@@ -129,9 +155,10 @@ first quoted marker is `~#1`. An id that occurs again in the same article gets `
 - the NOK: 48 articles, titles where the Gazette has them. The Code: 477 articles, each title
   equal to its entry in the contents, and each Code paragraph that Annex A names is in the text.
 
-It also checks the ledger (each pointer resolves, targets and `superseded_by` are consistent)
-and, for `code`, the crosswalk (each id is well formed and names an existing article; a
-paragraph that the text does not have gives a warning).
+It also checks the part of `index.json` of the dataset: each global id is well formed, each
+position points at its paragraph, each pointer resolves (targets and `superseded_by` are
+consistent), and, for `code`, each Annex A link names an existing article (a paragraph that the
+text does not have gives a warning).
 
 ## Completeness
 

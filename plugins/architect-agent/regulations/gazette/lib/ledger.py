@@ -1,14 +1,15 @@
-"""Build ledger.json of a dataset: for each article, the Gazette articles that amend it.
+"""The amendment pointers of each dataset: for each article, the Gazette articles that amend it.
 
-The ledger does not say what changed. It says where to look.
+index.py stores them in index.json (`amended_by` of each article). A pointer does not say what
+changed. It says where to look.
 
 The matcher reads the JSON files of the dataset. It keeps a reference to an article of
 the law («άρθρου 14 του ν. 4067/2012», «άρθρο 224 του Κώδικα Χωροταξίας - Πολεοδομίας»)
 only if its sentence has an amending verb («τροποποιείται», «αντικαθίσταται», «προστίθεται»,
 «καταργείται», ...) or the article title is an amendment title. A reference without this
-is a mention. The ledger does not keep mentions.
+is a mention. The pointers do not keep mentions.
 
-NOK ledger. Annex A of the Code names the amendments of each codified NOK paragraph. It is a
+NOK pointers. Annex A of the Code names the amendments of each codified NOK paragraph. It is a
 second source. Each pointer gets a status:
   confirmed    both sources agree
   superseded   only the matcher found it, and a later confirmed pointer rewrote the same text
@@ -17,22 +18,22 @@ second source. Each pointer gets a status:
   unchecked    the NOK article is not in Annex A, so no second source exists
   repeal       a repeal. Annex A cannot list it, because repealed text is not in the Code
   title        the amending article's title names the NOK article, but Annex A does not list it
-Each article can have:
+Each NOK article can have:
   not_codified     paragraphs that Annex A does not list and no pointer repeals. Code article 477
                    repeals only what Annex A lists. Check these paragraphs by hand.
-  repealed_in      the pointer that repeals the whole article
-The NOK ledger stops at the Code (8 June 2026). The links to the Code are in crosswalk.json.
+  repealed_in      the pointer that repeals the whole article ("<source>:<article>")
+The NOK pointers stop at the Code (8 June 2026).
 
-Code ledger. There is no second source. Each pointer has `kind`: amend or repeal.
+Code pointers. There is no second source, so they have no status.
 
-Each pointer of both ledgers can have:
+Each pointer of both datasets has `kind` (amend or repeal) and can have:
   targets      the provisions that the sentence names: "27" (whole article), "27.4", "11.6.ιδ". Best effort.
   restates     true if the amending article gives the full new text of the article
 """
-import datetime, re
+import re
 
-from common import num_key, read_json, write_json
-from datasets import CODE, CODE_PUBLISHED, CROSSWALK, NOK, Dataset
+from common import num_key, read_json
+from datasets import CODE, CODE_PUBLISHED, NOK, Dataset
 import annex_a
 
 NOK_NAME = (r"(?:(?:του\s+|στον?\s+)?(?:ν\.|Ν\.|νόμου)\s*4067\s*/\s*2012|(?:του\s+)?Ν\.\s?Ο\.\s?Κ\."
@@ -280,12 +281,13 @@ def build_nok():
                 "source": source, "act": e["act"], "article": article, "published": e["published"],
                 **({"paragraphs": sorted(e["paragraphs"])} if e["paragraphs"] else {}),
                 **({"targets": ids} if ids else {}), **({"restates": True} if e["restates"] else {}),
+                "kind": "repeal" if "repeal" in e["kinds"] else "amend",
                 "status": status, "_repeals": {t for t, k in e["targets"] if k == "repeal"}}
         for law, article in sorted(amended_by.get(num, set())):
             if any(p["act"].endswith(law) and p["article"] == article for p in pointers.values()):
                 continue
             source, act = by_law.get((law, article), (None, f"Ν. {law}"))
-            pointers[(source or law, article)] = {"source": source, "act": act, "article": article,
+            pointers[(source or law, article)] = {"source": source, "act": act, "article": article, "kind": "amend",
                                                   "status": "annex_a", "_repeals": set()}
 
         # A matcher pointer is superseded when a later confirmed pointer rewrote the same text.
@@ -295,7 +297,7 @@ def build_nok():
             for q in sorted(pointers.values(), key=lambda q: q.get("published", "")):
                 if q["status"] == "confirmed" and q.get("published", "") > p.get("published", "") and \
                         (q.get("restates") or covers(set(q.get("targets", [])), set(p.get("targets", [])))):
-                    p["status"], p["superseded_by"] = "superseded", f"{q['source']} άρθ. {q['article']}"
+                    p["status"], p["superseded_by"] = "superseded", f"{q['source']}:{q['article']}"
                     break
 
         ordered = sorted(pointers.values(), key=lambda p: (p.get("published") or "9999", p["source"] or "",
@@ -304,7 +306,7 @@ def build_nok():
         repealed = set().union(*(p.pop("_repeals") for p in ordered)) if ordered else set()
         entry = {"title": titles.get(num, "")}
         if whole:
-            entry["repealed_in"] = f"{whole['source']} άρθ. {whole['article']}"
+            entry["repealed_in"] = f"{whole['source']}:{whole['article']}"
         cp = code_paras.get(num)
         if cp and "*" not in cp and num in nok_articles:
             added = {t.split(".")[1] for p in ordered for t in p.get("targets", [])
@@ -316,21 +318,15 @@ def build_nok():
         entry["amended_in"] = ordered
         articles[num] = entry
 
-    write_json(NOK.ledger, {
-        "law": NOK.law, "title": NOK.title, "fek": "Α΄ 79/2012", "closed_at": CODE_PUBLISHED,
-        # The act that codified the NOK. It repealed only the provisions of its Annex A (see not_codified).
-        "codified_in": {"law": CODE.law, "title": CODE.title, "fek": "Α΄ 88/2026", "dataset": f"../{CODE.root.name}",
-                        "crosswalk": f"../{CODE.root.name}/{CROSSWALK.name}"},
-        "generated": datetime.date.today().isoformat(),
-        "articles": articles})
     counts = {}
     for a in articles.values():
         for p in a["amended_in"]:
             counts[p["status"]] = counts.get(p["status"], 0) + 1
     review = sum(counts.get(s, 0) for s in ("matcher", "annex_a"))
     uncodified = {k: a["not_codified"] for k, a in articles.items() if a.get("not_codified")}
-    print(f"-> {NOK.root.name}/ledger.json: {len(articles)} articles, pointers {counts}, {review} to review, "
+    print(f"   NOK pointers: {len(articles)} articles, pointers {counts}, {review} to review, "
           f"not codified {uncodified}")
+    return articles
 
 
 def build_code():
@@ -345,12 +341,11 @@ def build_code():
                              **({"targets": ids} if ids else {}), **({"restates": True} if e["restates"] else {}),
                              "kind": "repeal" if "repeal" in e["kinds"] else "amend"})
         articles[n] = {"amended_in": pointers}
-    write_json(CODE.ledger, {
-        "law": CODE.law, "title": CODE.title, "fek": "Α΄ 88/2026", "from": CODE_PUBLISHED,
-        "generated": datetime.date.today().isoformat(), "articles": articles})
-    print(f"-> {CODE.root.name}/ledger.json: {len(articles)} articles amended, "
+    print(f"   Code pointers: {len(articles)} articles amended, "
           f"{sum(len(a['amended_in']) for a in articles.values())} pointers")
+    return articles
 
 
-def run(ds: Dataset):
-    (build_nok if ds is NOK else build_code)()
+def build() -> dict:
+    """Return {"nok": {article: entry}, "code": {article: entry}}."""
+    return {"nok": build_nok(), "code": build_code()}
