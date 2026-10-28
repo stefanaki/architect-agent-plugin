@@ -155,8 +155,8 @@
       "scanned_at": "2026-09-13"
     },
     "2026": {
-      "issues": 156,
-      "max_number": 156,
+      "issues": 177,
+      "max_number": 177,
       "failures": [],
       "needles": [
         "4067/2012",
@@ -164,7 +164,7 @@
         "nok_abbrev",
         "code_5306"
       ],
-      "scanned_at": "2026-10-01"
+      "scanned_at": "2026-10-29"
     }
   },
   "issues": [
@@ -2744,6 +2744,28 @@
         "nok_by_name": 0,
         "nok_abbrev": 0,
         "code_5306": 25
+      },
+      "review": false
+    },
+    {
+      "number": 159,
+      "year": 2026,
+      "search_id": 806348,
+      "published": "2026-10-05",
+      "pages": 32,
+      "fek": "Α΄ 159/2026",
+      "id": "FEK-A-159-2026",
+      "acts": [
+        {
+          "kind": "ν.",
+          "number": "5338/2026"
+        }
+      ],
+      "hits": {
+        "4067/2012": 0,
+        "nok_by_name": 0,
+        "nok_abbrev": 0,
+        "code_5306": 3
       },
       "review": false
     }

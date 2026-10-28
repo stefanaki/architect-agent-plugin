@@ -1,6 +1,6 @@
 {
  "about": "Links between the Gazette files of regulations/, by global id: code:224.3.β (the Code), nok:27.5 (the NOK), FEK-A-108-2026:133.1 (another issue). No legal text: query it with scripts/regulations.py.",
- "updated": {"through": "ΦΕΚ Α΄ 156/2026", "scanned_at": "2026-10-01"},
+ "updated": {"through": "ΦΕΚ Α΄ 177/2026", "scanned_at": "2026-10-29"},
  "datasets": {
   "code": {"dir": "kodikas-tagaras-5306-2026", "file": "FEK-A-88-2026", "act": "Ν. 5306/2026", "fek": "Α΄ 88/2026", "title": "Κώδικας Χωροταξίας - Πολεοδομίας «Νικόλαος Ταγαράς»", "published": "2026-06-08", "in_force": "from 2026-06-08"},
   "nok": {"dir": "nok-4067-2012", "file": "FEK-A-79-2012", "act": "Ν. 4067/2012", "fek": "Α΄ 79/2012", "title": "Νέος Οικοδομικός Κανονισμός (ΝΟΚ)", "published": "2012-04-09", "in_force": "until 2026-06-07, except the provisions that Annex A does not list (not_codified)"}
@@ -448,7 +448,8 @@
   "FEK-A-117-2026": {"dataset": "code", "fek": "Α΄ 117/2026", "published": "2026-07-24"},
   "FEK-A-121-2026": {"dataset": "code", "fek": "Α΄ 121/2026", "published": "2026-07-31"},
   "FEK-A-122-2026": {"dataset": "code", "fek": "Α΄ 122/2026", "published": "2026-07-31"},
-  "FEK-A-134-2026": {"dataset": "code", "fek": "Α΄ 134/2026", "published": "2026-09-04"}
+  "FEK-A-134-2026": {"dataset": "code", "fek": "Α΄ 134/2026", "published": "2026-09-04"},
+  "FEK-A-159-2026": {"dataset": "code", "fek": "Α΄ 159/2026", "published": "2026-10-05"}
  },
  "articles": {
   "code:1": {"title": "Ορισμοί", "at": 0},
