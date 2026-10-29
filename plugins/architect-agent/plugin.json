@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "architect-agent",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "An assistant for the daily work of architecture engineers in Greece. First modules: Greek building regulations and Rhino modelling.",
   "author": {"name": "stefanaki", "url": "https://github.com/stefanaki"},
   "homepage": "https://github.com/stefanaki/architect-agent-plugin",

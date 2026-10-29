@@ -76,20 +76,34 @@ def issues_of_year(year: int) -> list[dict]:
                                 "searchText": "", "datePublished": "", "dateReleased": ""})
     out = {}
     for h in hits:
-        m, d, y = h["search_PublicationDate"].split()[0].split("/")
         out[int(h["search_DocumentNumber"])] = {
             "number": int(h["search_DocumentNumber"]), "year": year, "search_id": int(h["search_ID"]),
-            "published": f"{y}-{m}-{d}", "pages": int(h["search_Pages"] or 0)}
+            **dates(h), "pages": int(h["search_Pages"] or 0)}
     return [out[k] for k in sorted(out)]
+
+
+def issued(issue: dict) -> dict:
+    """Return {"issued": date} for a JSON file when the masthead date is not the release date."""
+    return {"issued": issue["issued"]} if issue.get("issued", issue["published"]) != issue["published"] else {}
+
+
+def dates(hit: dict) -> dict:
+    """Return the dates of an issue list record: "published", the day the issue was released, and
+    "issued", the date on its masthead. They differ for some issues (ΦΕΚ Α΄ 80/2018: dated 7 May,
+    released 8 May 2018)."""
+    def iso(field):
+        m, d, y = hit[field].split()[0].split("/")
+        return f"{y}-{m}-{d}"
+    published = iso("search_PublicationDate")
+    return {"published": published, "issued": iso("search_IssueDate") if hit.get("search_IssueDate") else published}
 
 
 def issue_record(number: int, year: int) -> dict:
     """Return the issue list record of one issue."""
     hit = api("simplesearch", {"selectYear": [str(year)], "selectIssue": ["1"], "documentNumber": str(number),
                                "searchText": "", "datePublished": "", "dateReleased": ""})[0]
-    m, d, y = hit["search_PublicationDate"].split()[0].split("/")
     return {"number": number, "year": year, "id": fek_id(number, year), "search_id": int(hit["search_ID"]),
-            "published": f"{y}-{m}-{d}", "pages": int(hit["search_Pages"] or 0)}
+            **dates(hit), "pages": int(hit["search_Pages"] or 0)}
 
 
 def timeline(search_id: int) -> list[dict]:

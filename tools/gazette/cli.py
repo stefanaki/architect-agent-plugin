@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""The Gazette CLI: build the NOK and Code datasets from the Government Gazette (ΦΕΚ Α΄).
+"""The Gazette CLI: build the NOK, Code and fire code datasets from the Government Gazette (ΦΕΚ Α΄).
 
     uv run tools/gazette/cli.py discover 2012 2026 [--force]    scan the issues -> tools/gazette/discovered.json, PDF cache
-    uv run tools/gazette/cli.py fetch nok|code [ID ...]          PDFs -> data/<dataset>/ (code: also the Code text)
+    uv run tools/gazette/cli.py fetch nok|code|fire [ID ...]     PDFs -> data/<dataset>/ (code, fire: also the base text)
     uv run tools/gazette/cli.py index                            amendments, Annex A links, lookups -> data/index.json
-    uv run tools/gazette/cli.py validate nok|code [ID ...]       fails on any error
-    uv run tools/gazette/cli.py crosscheck                       NOK completeness against independent sources
-    uv run tools/gazette/cli.py build nok|code|all               fetch, index, validate (+ crosscheck)
-    uv run tools/gazette/cli.py render nok|code [ID ...]         data/<dataset>/ -> notes/regulations/<dataset>/ (markdown for people)
+    uv run tools/gazette/cli.py validate nok|code|fire [ID ...]  fails on any error
+    uv run tools/gazette/cli.py crosscheck                       NOK and fire code completeness against independent sources
+    uv run tools/gazette/cli.py build nok|code|fire|all          fetch, index, validate (+ crosscheck)
+    uv run tools/gazette/cli.py render nok|code|fire [ID ...]    data/<dataset>/ -> notes/regulations/<dataset>/ (markdown for people)
 
 data/ is plugins/architect-agent/skills/regulations/data/. The PDF cache is ~/.cache/architect-agent/gazette
 (GAZETTE_CACHE overrides it). Discovery needs the network. The other commands download a PDF only if it is missing.
@@ -21,8 +21,8 @@ sys.path.insert(0, str(HERE / "lib"))
 # The id grammar ships with the skill: the query script needs it at run time.
 sys.path.insert(1, str(HERE.parents[1] / "plugins" / "architect-agent" / "skills" / "regulations" / "scripts"))
 
-import convert, crosscheck, datasets, discover, index, kodikas, render, validate  # noqa: E402
-from datasets import CODE, DATASETS, NOK  # noqa: E402
+import convert, crosscheck, datasets, discover, fire, index, kodikas, render, validate  # noqa: E402
+from datasets import CODE, DATASETS, FIRE, NOK  # noqa: E402
 
 
 def fetch(ds, only=frozenset()) -> int:
@@ -34,6 +34,9 @@ def fetch(ds, only=frozenset()) -> int:
         if ds is CODE and issue["id"] == CODE.main:
             kodikas.write_text()
             done += 1
+        elif ds is FIRE and issue["id"] == FIRE.main:
+            fire.write_text()
+            done += 1
         else:
             done += bool(convert.convert(issue, ds))
     print(f"-> {done} files in data/{ds.key}/")
@@ -43,7 +46,7 @@ def fetch(ds, only=frozenset()) -> int:
 def build(targets) -> int:
     """Run the pipeline in stages. Each stage runs for all target datasets before the next stage.
 
-    The index reads both datasets, so it and validation come after all fetches.
+    The index reads all datasets, so it and validation come after all fetches.
     """
     for ds in targets:
         fetch(ds)
@@ -51,6 +54,8 @@ def build(targets) -> int:
     failed = sum(validate.run(ds) for ds in targets)
     if NOK in targets:
         failed += crosscheck.run()
+    if FIRE in targets:
+        failed += crosscheck.run_fire()
     return failed
 
 
@@ -66,7 +71,7 @@ def main():
         p.add_argument("dataset", choices=DATASETS)
         p.add_argument("ids", nargs="*", help="only these files, e.g. FEK-A-245-2020")
     sub.add_parser("index", help="build data/index.json")
-    sub.add_parser("crosscheck", help="NOK completeness")
+    sub.add_parser("crosscheck", help="NOK and fire code completeness")
     sub.add_parser("build", help="full pipeline").add_argument("dataset", choices=[*DATASETS, "all"])
     args = parser.parse_args()
 
@@ -82,9 +87,9 @@ def main():
     elif args.command == "index":
         failed = index.run()
     elif args.command == "crosscheck":
-        failed = crosscheck.run()
+        failed = crosscheck.run() + crosscheck.run_fire()
     else:
-        failed = build([CODE, NOK] if args.dataset == "all" else [DATASETS[args.dataset]])
+        failed = build([CODE, NOK, FIRE] if args.dataset == "all" else [DATASETS[args.dataset]])
     sys.exit(1 if failed else 0)
 
 

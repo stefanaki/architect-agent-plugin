@@ -2,24 +2,32 @@
 
   code:224.3.β            the Code text (law 5306/2026, ΦΕΚ Α΄ 88/2026)
   nok:27.5                the NOK text (law 4067/2012, ΦΕΚ Α΄ 79/2012)
+  fire:Α5.3.7.1           the fire code (π.δ. 41/2018, ΦΕΚ Α΄ 80/2018): chapter Α, article 5, paragraph 5.3.7.1
   FEK-A-108-2026:133.1    an article or paragraph of another issue
   FEK-A-108-2026          a whole issue
 
 The part after ":" is the paragraph id of the JSON file (gazette README, "Paragraph ids").
 Its first part is the article. «#», «~» and «@» mark unnumbered text, quoted text and repeats.
+The fire code numbers its articles from 1 in each chapter, so its article part starts with the
+chapter letter («Α5»). It numbers its paragraphs decimally from the article number: the id keeps
+the printed number after the article, «5.3.7.1» -> "Α5.3.7.1".
 This module uses the standard library only: the query script imports it from an installed plugin.
 """
 import re
 
-SCOPES = ("code", "nok")
+SCOPES = ("code", "nok", "fire")
 GRAMMAR = {
     "code:<article>[.<paragraph>[.<case>...]]": "the Code text (law 5306/2026, ΦΕΚ Α΄ 88/2026), e.g. code:224.3.β",
     "nok:<article>[.<paragraph>...]": "the NOK text (law 4067/2012, ΦΕΚ Α΄ 79/2012), e.g. nok:27.5",
+    "fire:<chapter><article>[.<n>...]": "the fire code (π.δ. 41/2018, ΦΕΚ Α΄ 80/2018): fire:Α5.3.7.1 is "
+                                        "paragraph 5.3.7.1 of article 5 of Chapter Α",
     "FEK-A-<n>-<year>:<article>[...]": "another Gazette issue, e.g. FEK-A-108-2026:133.1",
     "#k / ~ / @k": "unnumbered text after a numbered part / quoted text of another provision / k-th repeat",
-    "ASCII": "clause letters can be typed in ASCII: code:224.3.b = code:224.3.β, nok:10a = nok:10Α",
+    "ASCII": "Greek letters can be typed in ASCII: code:224.3.b = code:224.3.β, nok:10a = nok:10Α, "
+             "fire:B3.2 = fire:Β3.2, fire:P-A = fire:Π-Α",
 }
 FILE = re.compile(r"FEK-A-\d+-\d{4}")
+CHAPTERED = re.compile(r"([Α-Ω])(\d+)")                # A fire code article: chapter letter and number, «Α5».
 MARKS = ".#~@"
 KERAIA = "΄"                                       # «΄» as the Gazette prints «Α΄ 88/2026».
 _GREEK_ACCENTS = str.maketrans("άέήίόύώϊΐϋΰς", "αεηιουωιιυυσ")
@@ -51,7 +59,7 @@ def split(gid: str) -> tuple[str, str]:
     """Split a canonical id: "code:224.3.β" -> ("code", "224.3.β"), "FEK-A-1-2026" -> ("FEK-A-1-2026", "")."""
     scope, _, local = gid.partition(":")
     if scope not in SCOPES and not FILE.fullmatch(scope):
-        raise ValueError(f"unknown id scope «{scope}»: use code:, nok: or FEK-A-<n>-<year>:")
+        raise ValueError(f"unknown id scope «{scope}»: use code:, nok:, fire: or FEK-A-<n>-<year>:")
     if scope in SCOPES and not local:
         raise ValueError(f"«{gid}» names no article: use {scope}:<article>[.<paragraph>...]")
     return scope, local
@@ -79,11 +87,14 @@ def related(a: str, b: str) -> bool:
 def _segment(seg: str, first: bool) -> str:
     """Normalize one part of a local id that a person or an agent typed."""
     seg = re.sub(r"[΄'’)]", "", seg)
-    if not seg or seg.upper().startswith("Π-"):        # An annex of an issue: «Π-», «Π-Γ».
-        return seg.upper()
+    if not seg or seg.upper().startswith(("Π-", "P-")):     # An annex of an issue: «Π-», «Π-Γ», «P-A».
+        return "Π-" + (_greek(seg[2:]).upper() if seg[2:] else "") if seg else seg
     if (m := re.fullmatch(r"(\d+)([^\d]*)", seg)):
         # A letter after a number is an added article or paragraph: «10Α», «7Α» (Greek capitals).
         return m.group(1) + _greek(m.group(2)).upper() if m.group(2) else seg
+    if first and (m := re.fullmatch(r"([^\d])(\d+)", seg)):
+        # A letter before the number is a chapter of the fire code: «Α5», «b3» -> «Β3».
+        return _greek(m.group(1)).upper() + m.group(2)
     if first:
         raise ValueError(f"«{seg}» is not an article number")
     return _greek(seg)
@@ -142,8 +153,25 @@ def cite(local: str, act: str, fek: str, label: str | None = None) -> str:
     The first number after the article is a paragraph, the next level a case (περ.), deeper levels
     sub-cases (υποπερ.). Unnumbered or quoted text cites its nearest numbered ancestor.
     `label` replaces «άρθ. N» for an annex («Παράρτημα Α΄»).
+    A fire code article («Α5») cites its chapter, and its decimal paragraph as printed:
+    cite("Α5.3.7.1.α", "Π.Δ. 41/2018", "Α΄ 80/2018") ->
+    "άρθ. 5 Κεφ. Α΄ παρ. 5.3.7.1 περ. α΄ π.δ. 41/2018 (ΦΕΚ Α΄ 80/2018)".
     """
     parts = numbered(local).split(".")
+    if (m := CHAPTERED.fullmatch(parts[0])):
+        chapter, number = m.groups()
+        decimal = [number]
+        while len(parts) > 1 and parts[1].isdigit():
+            decimal.append(parts.pop(1))
+        words = [label or f"άρθ. {number} Κεφ. {chapter}{KERAIA}"]
+        if len(decimal) > 1:
+            words.append(f"παρ. {'.'.join(decimal)}")
+        level = 1 if len(decimal) > 1 else 0
+        for p in parts[1:]:
+            mark = p + KERAIA if re.fullmatch(r"[α-ω]+", p) else p
+            words.append(f"{'περ.' if level <= 1 else 'υποπερ.'} {mark}")
+            level += 1
+        return f"{' '.join(words)} {_act_label(act)} (ΦΕΚ {fek})"
     words = [label or f"άρθ. {parts[0]}"]
     level = 0
     for p in parts[1:]:

@@ -22,6 +22,7 @@ def test_normalize():
     assert ids.normalize("nok:10a") == "nok:10Α"
     assert ids.normalize("fek-a-108-2026:133.1") == "FEK-A-108-2026:133.1"
     assert ids.normalize("FEK-A-245-2020:120#1~4") == "FEK-A-245-2020:120#1~4"
+    assert ids.normalize("fire:P-A") == ids.normalize("fire:p-a") == "fire:Π-Α"
     for bad in ("foo:1", "code:", "code:abc", "nok:27.zz9", "code:224.", "code:224..3"):
         with pytest.raises(ValueError):
             ids.normalize(bad)
@@ -121,6 +122,69 @@ def test_search_without_hits_suggests_stems():
     code, out = regs("search", "ξξξξ")
     assert code == 0
     assert "Try fewer or shorter stems" in out
+
+
+def test_read_fire_code_paragraph():
+    code, out = regs("read", "fire:A5.3.3")
+    assert code == 0
+    assert "[fire:Α5.3.3] άρθ. 5 Κεφ. Α΄ παρ. 5.3.3 π.δ. 41/2018 (ΦΕΚ Α΄ 80/2018)" in out
+    assert "Series Β of the Gazette is not in the datasets" in out
+
+
+def test_fire_code_tables_and_misprints_are_flagged():
+    _, out = regs("read", "fire:Α5")
+    assert "Πίνακας 4 (PDF page 12)" in out and "Do not state a value from the table" in out
+    _, out = regs("read", "fire:Α6.6")
+    assert "misprints its number as «6.1»" in out
+    _, out = regs("read", "fire:Π-Γ")
+    assert "do not state its rule" in out
+    _, out = regs("read", "fire:Β7.3")
+    assert "A table without a caption (PDF page 54): its rows are in the text below in order" in out
+    _, out = regs("read", "fire:Α3#47")                  # A table of another article on the same page.
+    assert "table" not in out.lower()
+    code, out = regs("read", "fire:Α5.9.9")
+    assert code == 2 and "not a paragraph id" in out
+
+
+def test_fire_code_annexes():
+    _, out = regs("read", "fire:P-A")
+    assert "Παράρτημα Α΄ π.δ. 41/2018" in out and "decoded from the glyph codes" in out
+    assert "Θ | ΓΡΑΦΕΙΑ | Γραφεία Δημοσίων Υπηρεσιών" in out
+    _, out = regs("read", "fire:Π-Β")
+    assert "transcribed by hand" in out and "ΚΤΙΡΙΟ → Πολλαπλών χρήσεων → Διαχωρισμένες" in out
+
+
+def test_fire_code_ids_without_a_chapter():
+    code, out = regs("read", "fire:5")
+    assert code == 2 and "fire:Α5 or fire:Β5" in out
+
+
+def test_fire_code_history_and_shared_issue():
+    _, out = regs("history", "fire:Α6", "--dates")
+    assert "Ν. 4710/2020  FEK-A-142-2020:26  amend (gives the full new text) → fire:Α6 [chapter]" in out
+    # The tax part of ν. 4710/2020 ends with its own commencement article 11: article 65 governs article 26.
+    assert "commencement article FEK-A-142-2020:65" in out
+    # The history of one paragraph shows only its part of the restated article.
+    _, out = regs("history", "fire:Α6.7", "--full")
+    assert "[FEK-A-142-2020:26.2~6.7]" in out and "[FEK-A-142-2020:26.2~6.5]" not in out
+    assert "Part of this amending text is an image in the Gazette (PDF pages [27, 28, 29])" in out
+    _, out = regs("toc", "FEK-A-142-2020")
+    assert "a commencement article of the act, for articles 12-65" in out and "or π.δ. 41/2018." in out
+    # FEK-A-142-2020 is in the NOK and the fire datasets: its fire article is readable by its global id.
+    code, out = regs("read", "FEK-A-142-2020:26")
+    assert code == 0 and "Τροποποίηση του άρθρου 6 του π.δ. 41/2018" in out
+
+
+def test_fire_code_search_and_toc():
+    _, out = regs("search", "A2-s1", "--in", "fire")          # A Latin «A»: the Gazette prints a Greek «Α».
+    assert "fire:Α6" in out
+    _, out = regs("search", "οδευσ", "διαφυγ", "--in", "fire")
+    heads = [line for line in out.splitlines() if line.startswith(("code:", "nok:", "fire:", "FEK-"))]
+    assert heads and all(h.startswith("fire:") for h in heads)
+    _, out = regs("toc", "fire")
+    assert "ΚΕΦΑΛΑΙΟ Β΄: ΕΙΔΙΚΕΣ ΔΙΑΤΑΞΕΙΣ" in out and "  fire:Β11  " in out
+    code, out = regs("trace", "fire:Α6")
+    assert code == 2 and "Annex A" in out
 
 
 def test_changes_since_the_code():

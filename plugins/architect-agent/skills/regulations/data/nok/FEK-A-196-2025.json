@@ -23,6 +23,9 @@
      "page": 1,
      "headings": [],
      "match": "title",
+     "image_pages": [
+      1
+     ],
      "paragraphs": [
       {
        "id": "1.1",

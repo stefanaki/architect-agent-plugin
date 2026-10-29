@@ -4,10 +4,11 @@ The markdown is for reading by people. No module reads it. It adds notes that
 come from index.json (amendments and Annex A links):
   - the NOK text: the amendments of each article, and where each paragraph is in the Code
   - the Code text: what each article codifies (Annex A), the NOK provisions it holds, its amendments
+  - the fire code text: its amendments, and the tables and figures that have no text
 """
 from common import frontmatter, num_key, read_json
 from convert import markers
-from datasets import CODE, NOK, Dataset, heading_level, md_link
+from datasets import CODE, FIRE, NOK, Dataset, heading_level, md_link
 import ids, index
 
 
@@ -163,10 +164,44 @@ def code_md(doc: dict, idx: dict) -> str:
     return fm + f"\n# {doc['title']}\n\n" + "\n".join(body).rstrip() + "\n"
 
 
+def fire_md(doc: dict, idx: dict) -> str:
+    """Return the markdown of the fire code text."""
+    amended = articles_of(idx, FIRE)
+    body, path = [], None
+    for a in doc["articles"]:
+        if a["path"] != path:
+            path = a["path"]
+            body += [f"## {path[0]}", ""]
+            body += [p["text"] for ch in doc["chapters"] if f"ΚΕΦΑΛΑΙΟ {ch['chapter']}΄" == path[0].split(":")[0]
+                     for p in ch.get("text", [])] + [""]
+        body += [f"##### {a['label'] if a['article'].startswith('Π-') else 'Άρθρο ' + a['label']}", ""]
+        if a["title"]:
+            body += [f"**{a['title']}**", ""]
+        images = a.get("image_pages", [])
+        if a.get("missing_text"):
+            body += [f"> The Gazette sets this annex in a font without a text map. See the source PDF, pages "
+                     f"{images[0]}-{images[-1]}.", ""]
+        elif images:
+            body += [f"> Tables or figures without text on PDF pages {', '.join(map(str, images))}.", ""]
+        if a.get("tables"):
+            names = [f"Πίνακας {t['table']}" if t["table"] else "a table without a caption" for t in a["tables"]]
+            body += ["> Tables with their cells out of order: " + ", ".join(
+                f"{name} (pages {t['pages'][0]}-{t['pages'][-1]})" for name, t in zip(names, a["tables"])), ""]
+        if amended.get(a["article"], {}).get("amended_by"):
+            body += [amendment_line(amended[a["article"]]["amended_by"]), ""]
+        paragraph_lines(body, a["paragraphs"])
+    fm = frontmatter(title=doc["title"], fek=doc["fek"], acts=[doc["act"]], published=doc["published"],
+                     source=doc["source"], pages=doc["pages"], issued_by=doc["issued_by"], in_force=doc["in_force"],
+                     articles=len(doc["articles"]))
+    return fm + f"\n# {doc['title']}\n\n" + "\n".join(body).rstrip() + "\n"
+
+
 def markdown(ds: Dataset, doc: dict, notes: dict | None, idx: dict) -> str:
     """Return the markdown of one JSON document. `notes` are the NOK notes (see nok_notes)."""
     if ds is CODE and doc["file"] == CODE.main:
         return code_md(doc, idx)
+    if ds is FIRE and doc["file"] == FIRE.main:
+        return fire_md(doc, idx)
     return issue_md(doc, notes if doc["file"] == ds.main else None)
 
 

@@ -5,7 +5,8 @@ Checks for each JSON file:
              of a paragraph, quoted text as a heading, the president line in an act title,
              control characters. Latin letters inside Greek words give a warning only.
   invented   Parsed words that the plain text of the PDF does not have. The parser makes
-             them when it glues two columns or splits a word. More than 5 is an error.
+             them when it glues two columns or splits a word. More than 5 is an error. A Greek
+             word of 24 letters or more gives a warning: words that lost their spaces.
   ids        Paragraph ids are unique within an article.
   page tops  The first body line of each page that a kept article spans is in the text.
   coverage   The words that pdftotext finds on the pages of a kept article are in the
@@ -16,16 +17,20 @@ Checks for each JSON file:
 The Code text: articles 1 to 477, titles equal to the contents entries, coverage per article (a
 warning only on pages with a broken text layer), and each Code paragraph that Annex A names is in
 the text.
+The fire code text: the articles of each chapter and the four annexes, titles equal to the chapter
+contents, decimal paragraph numbers in order, each numbering erratum applied once, no paragraph
+that holds a later decimal number of its article, and coverage per article. Annex Α decodes every
+glyph and has a row for each use category Α-Λ; Annex Β has a paragraph for each path of its diagram.
 index.json: each global id is well formed; each position points at its paragraph; each amendment
-pointer resolves; each Annex A link names an existing article (a paragraph that the text does not
+pointer resolves, in the dataset's own file of the issue; each Annex A link names an existing article (a paragraph that the text does not
 have gives a warning); an article number occurs once in each issue, so that a FEK id names one article.
 """
 import re
 from collections import Counter
 
 from common import PDF, degreekify, pdftotext, read_json
-from datasets import CODE, INDEX, NOK, Dataset
-import annex_a, extract, ids, index
+from datasets import CODE, FIRE, INDEX, NOK, Dataset
+import annex_a, extract, fire, ids, index
 
 NOISE = [
     (re.compile(r"ΕΦΗΜΕΡΙ[ΣΔ∆]"), "Gazette header"),
@@ -58,6 +63,9 @@ def words(text):
     return Counter(w.lower() for w in GREEK_WORD.findall(text))
 
 
+MERGED_LETTERS = 24     # A Greek word this long is two or more words that lost their spaces.
+
+
 def raw_words(pdf) -> set[str]:
     """Return the Greek words of the whole PDF, in plain text mode.
 
@@ -76,6 +84,10 @@ def invented(texts, pdf, errors, warnings, broken: bool = False):
     A file with a broken text layer gets a warning only: that layer can hold a second
     copy of the text in another layout (ΦΕΚ Α΄ 67/2026, page 169).
     """
+    merged = sorted({w for t in texts for w in GREEK_WORD.findall(t) if len(w) >= MERGED_LETTERS})
+    if merged:
+        warnings.append(f"merged: {len(merged)} words of {MERGED_LETTERS}+ letters, words without the space between "
+                        f"them? ({', '.join(merged[:5])})")
     have = raw_words(pdf)
     bad = Counter(w.lower() for t in texts for w in GREEK_WORD.findall(t) if w.lower() not in have)
     if not bad:
@@ -153,7 +165,8 @@ def check_issue(ds: Dataset, doc: dict) -> tuple[list[str], list[str]]:
                for n, c in Counter(a["article"] for a in kept).items() if c > 1]
 
     pdf = PDF / f"{ident}.pdf"
-    broken = extract.broken_pages(pdf)
+    # On these pages plain pdftotext is not a reliable reference, so the word checks only warn.
+    broken = extract.broken_pages(pdf) | extract.merged_column_pages(pdf)
     invented(texts, pdf, errors, warnings, broken=bool(broken))
     acts = extract.parse(pdf)
     firsts = extract.first_body_lines(pdf)
@@ -285,6 +298,101 @@ def check_code_text(doc: dict) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
+def check_fire_text(doc: dict) -> tuple[list[str], list[str]]:
+    errors, warnings = [], []
+    arts = doc["articles"]
+    chapter_text = [p["text"] for ch in doc["chapters"] for p in ch.get("text", [])]
+    texts = [a["title"] for a in arts] + [p["text"] for a in arts for p in a["paragraphs"]] + chapter_text
+    noise(texts + [h for a in arts for h in a["path"]], errors, warnings)
+    pdf = PDF / f"{FIRE.main}.pdf"
+    # Table cells come in reading order, so a word split across two cells is not joined. The query script
+    # says that the text of a table is out of order, so parsed words on table pages give a warning only.
+    in_table = {(a["article"], pg) for a in arts for t in a.get("tables", []) for pg in t["pages"]}
+    # The decoded and the transcribed annexes have no words in the text layer to compare with.
+    read = [a for a in arts if not (a.get("decoded") or a.get("transcribed"))]
+    body = [p["text"] for a in read for p in a["paragraphs"] if (a["article"], p["page"]) not in in_table]
+    invented([a["title"] for a in read] + body + chapter_text, pdf, errors, warnings)
+    invented([p["text"] for a in read for p in a["paragraphs"] if (a["article"], p["page"]) in in_table],
+             pdf, warnings, warnings)
+    errors += annex_checks({a["article"]: a for a in arts})
+    expected = fire.expected_articles() + [f"Π-{x}" for x in "ΑΒΓΔ"]
+    if [a["article"] for a in arts] != expected:
+        errors.append(f"sequence: the fire code articles are {[a['article'] for a in arts]}, not {expected}")
+    contents = {f"{ch['chapter']}{n}": t for ch in doc["chapters"] for n, t in ch["contents"].items()}
+    printed = []
+    for a in arts:
+        name = f"article {a['article']}"
+        # The contents and the heading can differ in case only («Δομική Πυροπροστασία»). The heading is kept.
+        if a["article"] in contents and norm_title(a["title"]).lower() != norm_title(contents[a["article"]]).lower():
+            errors.append(f"title: {name}: «{a['title'][:60]}» is not the contents entry «{contents[a['article']][:60]}»")
+        dup = [i for i, n in Counter(p["id"] for p in a["paragraphs"]).items() if n > 1]
+        if dup:
+            errors.append(f"ids: {name}: repeated ids {dup[:5]}")
+        printed += [p for p in a["paragraphs"] if p.get("printed")]
+        # The decimal numbers of an article run in order. A number that runs backwards is a missed paragraph
+        # start or a misprint that NUMBERING_ERRATA does not list.
+        paths = [tuple(map(int, q.split("."))) for p in a["paragraphs"]
+                 if re.fullmatch(r"[Α-Ω]\d+\.\d+(?:\.\d+)*", p["id"]) and (q := p["id"].split(".", 1)[1])]
+        if (bad := next((y for x, y in zip(paths, paths[1:]) if y <= x), None)):
+            errors.append(f"sequence: {name}: paragraph {'.'.join(map(str, bad))} comes after a later number")
+        number = a["article"][1:]
+        for p in a["paragraphs"]:
+            if (m := re.search(rf"[.:;·]\s+({number}(?:\.\d{{1,2}}){{1,4}})\.\s+[Α-ΩΆ-Ώ]", p["text"])):
+                warnings.append(f"merged: {a['article']}: paragraph {p['id']} holds «{m.group(1)}.»")
+    if len(printed) != len(fire.NUMBERING_ERRATA):
+        errors.append(f"errata: {len(printed)} paragraphs have a printed number, for {len(fire.NUMBERING_ERRATA)} errata")
+
+    # Coverage: the Greek words that pdftotext finds on the pages of each article are in the parsed text.
+    pages = pdftotext(pdf).split("\f")
+    raw = {i + 1: HEADER_WORDS.sub("", RAW_HEADER.sub("", t)) for i, t in enumerate(pages)}
+    first = doc["chapters"][0]["page"]
+    raw[first] = raw[first][raw[first].find("ΚΕΦΑΛΑΙΟ Α"):]          # The decree's preamble comes before it.
+    got_by_page = {}
+    for ch in doc["chapters"]:
+        got_by_page.setdefault(ch["page"], Counter()).update(words(
+            f"ΚΕΦΑΛΑΙΟ {ch['title']} " + " ".join(f"Άρθρο {t}" for t in ch["contents"].values())))
+        for p in ch.get("text", []):
+            got_by_page.setdefault(p["page"], Counter()).update(words(p["text"]))
+    for a in arts:
+        got_by_page.setdefault(a["page"], Counter()).update(words(a["title"] + " Άρθρο"))
+        for p in a["paragraphs"]:
+            got_by_page.setdefault(p["page"], Counter()).update(words(p["text"]))
+    for a in read:
+        if a.get("missing_text"):
+            continue
+        lo = a["page"]
+        hi = max([p["page"] for p in a["paragraphs"]] + [lo])
+        expected_words = words(degreekify("\n".join(raw.get(pg, "") for pg in range(lo, hi + 1))))
+        got = Counter()
+        for pg in range(lo - 1, hi + 2):
+            got.update(got_by_page.get(pg, Counter()))
+        missing = fragments_removed(expected_words - got, got)
+        total = sum(expected_words.values())
+        if total and sum(missing.values()) > max(5, COVERAGE_LIMIT * total):
+            errors.append(f"coverage: article {a['article']}, pages {lo}-{hi}: {sum(missing.values())} of {total} "
+                          f"words not parsed ({', '.join(w for w, _ in missing.most_common(8))})")
+    return errors, warnings
+
+
+def annex_checks(by_id: dict[str, dict]) -> list[str]:
+    """Annex Α of the fire code: every glyph code decoded, and one row for each use category Α to Λ.
+    Annex Β: one paragraph for each path of the transcribed diagram."""
+    errors = []
+    a, b = by_id.get("Π-Α", {}), by_id.get("Π-Β", {})
+    texts = [a.get("title", "")] + [p["text"] for p in a.get("paragraphs", [])] + [b.get("title", "")]
+    if (bad := [t for t in texts if fire.UNKNOWN_CID in t]):
+        errors.append(f"annex: {len(bad)} texts of Annex Α or Β have a glyph code that fire.ANNEX_CIDS lacks: «{bad[0][:60]}»")
+    rows = "".join(m.group(1) for p in a.get("paragraphs", []) if (m := re.match(r"([Α-Ω]) \| ", p["text"])))
+    if rows != "ΑΒΓΔΕΖΗΘΙΚΛ":
+        errors.append(f"annex: Annex Α has the rows «{rows}», not one for each use category Α-Λ")
+    leaves = sum(1 for k, (d, _) in enumerate(fire.ANNEX_B_TREE)
+                 if k + 1 == len(fire.ANNEX_B_TREE) or fire.ANNEX_B_TREE[k + 1][0] <= d)
+    if len(b.get("paragraphs", [])) != leaves or not b.get("title"):
+        errors.append(f"annex: Annex Β has {len(b.get('paragraphs', []))} paragraphs and title «{b.get('title')}», "
+                      f"for {leaves} paths of the diagram")
+    return errors
+
+
 def annex_order(arts: list[dict]) -> list[str]:
     """Annex A rows of a Code article name its paragraphs in order. A number that runs backwards is a
     row of another article (see annex_a._fix_boundaries)."""
@@ -297,11 +405,12 @@ def annex_order(arts: list[dict]) -> list[str]:
     return errors
 
 
-def pointer_article(p: dict, docs: dict, tag: str, errors: list) -> dict | None:
-    """Return the amending article of a pointer, or None with an error."""
+def pointer_article(p: dict, docs: dict, tag: str, errors: list, ds: Dataset) -> dict | None:
+    """Return the amending article of a pointer, or None with an error. The dataset's own file of the issue
+    comes first: an issue that two datasets hold keeps different articles in each file."""
     source, article = ids.split(p["by"])
     if source not in docs:
-        f = next((ds.json_path(source) for ds in (NOK, CODE) if ds.json_path(source).exists()), None)
+        f = next((d.json_path(source) for d in (ds, NOK, CODE, FIRE) if d.json_path(source).exists()), None)
         docs[source] = read_json(f) if f else None
     doc = docs[source]
     if doc is None:
@@ -341,7 +450,11 @@ def check_pointers(ds: Dataset, idx: dict) -> list[str]:
                 if p.get("status") != "annex_a":
                     errors.append(f"{tag}: no source file")
                 continue
-            art = pointer_article(p, docs, tag, errors)
+            art = pointer_article(p, docs, tag, errors, ds)
+            if art is not None and ds is FIRE:
+                text = re.sub(r"\s+", " ", art["title"] + " " + " ".join(x["text"] for x in art["paragraphs"]))
+                if not re.search(rf"άρθρ\w*\s+{num[1:]}(?!\d)", text):
+                    errors.append(f"{tag}: the article text does not name article {num[1:]}")
             if art is not None and ds is NOK and p["status"] != "annex_a":
                 text = re.sub(r"\s+", " ", art["title"] + " " + " ".join(x["text"] for x in art["paragraphs"]))
                 if not name.search(text):
@@ -376,7 +489,7 @@ def check_positions(ds: Dataset, idx: dict) -> list[str]:
 def check_files(ds: Dataset, idx: dict) -> list[str]:
     """Check that the file list of the index is the JSON files of the dataset."""
     on_disk = {p.stem for p in ds.json_paths()}
-    listed = {k for k, v in idx["files"].items() if v["dataset"] == ds.key}
+    listed = {k for k, v in idx["files"].items() if v["dataset"] == ds.key or ds.key in v.get("also", [])}
     return [f"index: file {f} is not in the index" for f in sorted(on_disk - listed)] + \
         [f"index: file {f} does not exist" for f in sorted(listed - on_disk)]
 
@@ -479,6 +592,8 @@ def run(ds: Dataset, only: set[str] = frozenset()) -> int:
         files += 1
         if ds is CODE and path.stem == CODE.main:
             failed += report(path.stem, *check_code_text(doc), limit=10)
+        elif ds is FIRE and path.stem == FIRE.main:
+            failed += report(path.stem, *check_fire_text(doc), limit=10)
         else:
             failed += report(path.stem, *check_issue(ds, doc))
     print(f"\n{files - failed}/{files} files without errors")

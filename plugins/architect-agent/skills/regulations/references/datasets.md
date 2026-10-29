@@ -9,6 +9,7 @@ is flagged.
 |---|---|---|---|
 | `code` | Spatial and Urban Planning Code, law 5306/2026 (Gazette A 88/2026) | the 477 articles as published on 8 June 2026, plus each later Gazette issue (series A) that cites the Code | from 8 June 2026 |
 | `nok` | New Building Regulation (NOK), law 4067/2012 (Gazette A 79/2012) | the 2012 text, plus the relevant articles of every Gazette issue that cites the NOK, 2012 to 7 June 2026 | until 7 June 2026 |
+| `fire` | Fire code «Κανονισμός Πυροπροστασίας Κτιρίων», π.δ. 41/2018 (Gazette A 80/2018) | the 2018 text, plus the relevant articles of every series A issue that cites it | from 7 or 8 August 2018 (three months after publication: the issue is dated 7 May and was released 8 May) |
 
 All text comes from the Gazette PDFs of the National Printing House. It is **Gazette text, not a
 consolidation**. The datasets point to each amendment and give its text, but they never produce
@@ -31,10 +32,39 @@ Annex A has two legal functions:
 A NOK paragraph number in a link is the number in the text in force on 8 June 2026, as Annex A
 cites it. The 2012 text can lack it, because an amendment added or renumbered it.
 
+## The fire code
+
+- **Ids.** The decree numbers its articles from 1 in each of its three chapters, so an id starts
+  with the chapter: `fire:Β3` is article 3 of Chapter Β. Paragraphs keep their printed decimal
+  number: `fire:Α5.3.7.1` is «5.3.7.1». Two headings of article 6 are misprinted in the Gazette
+  («6.1» for 6.6, and a second «6.7» for 6.8). Their ids follow the sequence, and `read` says so.
+- **Tables and figures.** The tables in readable type are in the text, but their cells are out
+  of order. The script names each such table («Πίνακας 4», or a table without a caption) and its
+  PDF pages. Some tables and the figures have no text in the Gazette PDF at all: the script flags
+  their pages as incomplete. ν. 4710/2020 prints the tables of its new article 6 as images.
+- **Annexes.** The annexes are set in a font without a text map. Annex Α (the buildings of each
+  use category) is decoded from the glyph codes and checked against the page. Annex Β is a
+  diagram printed as an image: its text is transcribed by hand, one path through the diagram per
+  paragraph. Annexes Γ and Δ (the EN 13501 classes of fire resistance and reaction to fire) have
+  no text yet: the script flags them.
+- **Amendments.** One series A provision changes the text: ν. 4710/2020 (Gazette A 142/2020),
+  article 26, which restates article 6 of Chapter Α. The amending text names no chapter, so its
+  status is `chapter`. Other series A issues that the official graph links to the decree set
+  transitional rules and deadlines (kindergartens, health buildings). They do not change its
+  text. They are in the dataset, and `search` finds them.
+- **Series B is not here.** The Fire Service provisions (Πυροσβεστικές Διατάξεις) and the
+  ministerial decisions that apply alongside the decree are published in series B. The four
+  series B issues that the official graph links to the decree were read by hand. None changes
+  its text: they set up the deviations committee and require fire certificates for care centres.
+  Also outside the datasets: Πυροσβεστική Διάταξη 13/2021 (Gazette B 5519/2021), the procedure for
+  fire protection certificates, which the official graph does not link to the decree, and the
+  ΥΠΕΝ circular 1/2019 (42489/1824) on applying the decree, which is not a Gazette act.
+
 ## How amendments are found
 
 - **Discovery.** Every series A Gazette issue from 2012 on is checked for citations of the NOK,
-  by number, name or abbreviation, and from 2026 also of the Code.
+  by number, name or abbreviation, from 2018 also of the fire code, and from 2026 also of the
+  Code.
 - **NOK amendments.** These are confirmed against independent sources: Annex A, the
   "as amended by" citations in later laws, the official modification graph of search.et.gr,
   and the article titles. The status of an amendment says how many sources agree:
@@ -48,6 +78,7 @@ cites it. The 2012 text can lack it, because an amendment added or renumbered it
 | `annex_a` | one source: only Annex A lists it; its Gazette text is not in the datasets |
 | `title` | one source: the title of the amending article names the article |
 | `repeal` | a repeal |
+| `chapter` | fire code: the amending text names no chapter, so the chapter comes from the paragraph numbers it cites |
 
 - **Code amendments.** These have one source by design, the text matcher. Nothing like Annex A
   exists yet to confirm them.

@@ -1,4 +1,4 @@
-"""Find the Gazette issues (series Α') that cite the NOK or the Code that codified it.
+"""Find the Gazette issues (series Α') that cite the NOK, the Code that codified it, or the fire code.
 
 The module gets the list of issues for each year from the search.et.gr API.
 It does not guess where a year ends. It downloads each issue and searches
@@ -7,6 +7,9 @@ the text for these strings:
   nok_by_name      «Νέου Οικοδομικού Κανονισμού» or «Ν.Ο.Κ.» without the number
   nok_abbrev       «ΝΟΚ» without dots, as a separate word
   code_5306        the Code «Νικόλαος Ταγαράς» (law 5306/2026), from 2026
+  fire_41          the fire code (π.δ. 41/2018), by number, from 2018
+  fire_by_name     «Κανονισμός Πυροπροστασίας Κτιρίων» without the number, from 2018. The 1988 decree
+                   it replaced had the same name, so an issue with only this hit gets `review: true`.
 
 An issue that names the NOK only by name or abbreviation gets `review: true`.
 A failed download is not "no issue". The module records it, and the command exits with an error.
@@ -26,6 +29,13 @@ SECONDARY = re.compile(r"Νέου\s+Οικοδομικού\s+Κανονισμο�
 ABBREV = re.compile(r"(?<![^\W\d_])ΝΟΚ(?![^\W\d_])")
 CODE = re.compile(r"5306\s*/\s*2026|Κώδικα\s+Χωροταξίας\s*[-–]\s*Πολεοδομίας|Νικόλαος\s+Ταγαράς")
 CODE_FROM_YEAR = 2026
+# π.δ. 41/2018 by number: «π.δ. 41/2018», «ΠΔ 41/2018», «του διατάγματος 41/2018», «π.δ. υπ’ αρ. 41/2018».
+# A bare «41/2018» can be part of another act's number («ΔΙΠΑΑ/οικ.41/2018»), so the decree must be named.
+# «π.δ. 41/2018», «Π.δ. 41/2018», «ΠΔ 41/2018», «πδ 41/18», «διατάγματος υπ’ αρ. 41/2018».
+FIRE = re.compile(r"(?:[πΠ]\.\s?[δΔ]\.|(?<![Α-Ωα-ωά-ώ])[πΠ][δΔ]|[Δδ]ιατάγματ\w*|[Δδ]ιάταγμα)\s*"
+                  r"(?:υπ[’'΄]?\s*αρ\w*\.?\s*)?41\s*/\s*(?:20)?18(?!\d)")
+FIRE_NAME = re.compile(r"Κανονισμ\w*\s+Πυροπροστασίας\s+Κτιρίων")
+FIRE_FROM_YEAR = 2018
 # Header of each act in the issue. One issue can hold more than one act.
 ACT = re.compile(r"(ΝΟΜΟΣ|ΠΡΟΕΔΡΙΚΟ\s+ΔΙΑΤΑΓΜΑ|ΠΡΑΞΗ\s+ΝΟΜΟΘΕΤΙΚΟΥ\s+ΠΕΡΙΕΧΟΜΕΝΟΥ|ΔΙΟΡΘΩΣΕΙΣ\s+ΣΦΑΛΜΑΤΩΝ)"
                  r"(?:\s+ΥΠ[’'΄]?\s*ΑΡΙΘ\S*\s*(\d+))?")
@@ -33,7 +43,8 @@ KIND = {"ΝΟΜΟΣ": "ν.", "ΠΡΟΕΔΡΙΚΟ": "π.δ.", "ΠΡΑΞΗ": "ΠΝ
 
 
 def needles(year):
-    return ["4067/2012", "nok_by_name", "nok_abbrev"] + (["code_5306"] if year >= CODE_FROM_YEAR else [])
+    return ["4067/2012", "nok_by_name", "nok_abbrev"] + (["code_5306"] if year >= CODE_FROM_YEAR else []) \
+        + (["fire_41", "fire_by_name"] if year >= FIRE_FROM_YEAR else [])
 
 
 def acts(text, year):
@@ -47,13 +58,18 @@ def acts(text, year):
 
 
 def review(hits):
-    """Return True if the issue names the NOK only without its number."""
-    return hits.get(LAW, 0) == 0 and (hits.get("nok_by_name", 0) + hits.get("nok_abbrev", 0)) > 0
+    """Return True if the issue names the NOK or the fire code only without its number."""
+    nok = hits.get(LAW, 0) == 0 and (hits.get("nok_by_name", 0) + hits.get("nok_abbrev", 0)) > 0
+    return nok or (hits.get("fire_41", 0) == 0 and hits.get("fire_by_name", 0) > 0)
 
 
 def cites_nok(issue):
     """Return True if any NOK needle matched. An issue with only Code hits belongs to the Code dataset."""
     return any(issue["hits"].get(k) for k in (LAW, "nok_by_name", "nok_abbrev"))
+
+
+def cites_fire(issue):
+    return any(issue["hits"].get(k) for k in ("fire_41", "fire_by_name"))
 
 
 def scan(issue):
@@ -70,6 +86,8 @@ def scan(issue):
             "nok_abbrev": len(ABBREV.findall(text))}
     if y >= CODE_FROM_YEAR:
         hits["code_5306"] = len(CODE.findall(text))
+    if y >= FIRE_FROM_YEAR:
+        hits["fire_41"], hits["fire_by_name"] = len(FIRE.findall(text)), len(FIRE_NAME.findall(text))
     if not any(hits.values()):
         dest.unlink()                     # Do not keep issues that do not match.
         return issue, None, None
@@ -95,6 +113,14 @@ def scan_year(year, workers=8):
     meta = {"issues": len(issues), "max_number": max((i["number"] for i in issues), default=0),
             "failures": failures, "needles": needles(year), "scanned_at": datetime.date.today().isoformat()}
     return found, meta
+
+
+def refresh_dates(db, year):
+    """Copy the dates of the issue list into the records of a year that is not scanned again."""
+    listed = {i["number"]: i for i in issues_of_year(year)}
+    for d in db["issues"]:
+        if d["year"] == year and d["number"] in listed:
+            d["published"], d["issued"] = listed[d["number"]]["published"], listed[d["number"]]["issued"]
 
 
 def load():
@@ -126,6 +152,7 @@ def run(lo: int, hi: int, force: bool = False) -> int:
     for year in range(lo, hi + 1):
         prev = db["scanned"].get(str(year))
         if prev and not prev["failures"] and prev["needles"] == needles(year) and year < this_year and not force:
+            refresh_dates(db, year)
             continue
         print(f"- ΦΕΚ Α΄ {year}")
         found, meta = scan_year(year)

@@ -2,18 +2,19 @@
 """Query the bundled Greek building regulations. Read-only, offline, standard library only.
 
     regs.py info
-    regs.py search <stem> [<stem> ...] [--in code|nok|issues|all] [--limit N]
+    regs.py search <stem> [<stem> ...] [--in code|nok|fire|issues|all] [--limit N]
     regs.py read <id>
     regs.py history <id> [--dates] [--as-of YYYY-MM-DD]
-    regs.py changes [--since YYYY-MM-DD] [--in code|nok]
+    regs.py changes [--since YYYY-MM-DD] [--in code|nok|fire]
     regs.py trace <id>
-    regs.py toc <code|nok|FEK-A-<n>-<year>> [--section TEXT]
+    regs.py toc <code|nok|fire|FEK-A-<n>-<year>> [--section TEXT]
 
 Every command also takes --page N (long output comes in pages of about 12,000 characters)
 and --full (no pages).
 
 Ids: code:224.3.β (the Code «Νικόλαος Ταγαράς», law 5306/2026), nok:27.5 (the NOK, law 4067/2012),
-FEK-A-108-2026:133.1 (another Gazette issue). ASCII works for clause letters: code:224.3.b.
+fire:Α5.3.7.1 (the fire code, π.δ. 41/2018: Chapter Α, article 5, paragraph 5.3.7.1),
+FEK-A-108-2026:133.1 (another Gazette issue). ASCII works for Greek letters: code:224.3.b, fire:A5.3.
 Output is plain text. Its first line says how far the Gazette was checked.
 """
 import argparse, datetime, json, re, sys
@@ -33,7 +34,8 @@ BUILDING_RULES = "ΜΕΡΟΣ Δ"          # Code Part Δ «Κανόνες δόμ
 GENERAL_RULES = re.compile(r"^ΤΜΗΜΑ [IΙ] ")
 TITLE_WEIGHT = 10                   # Search score of each search term in an article title.
 CODE_START = "2026-06-08"           # The Code is in force from this date. The NOK applies before it.
-WEAK = {"matcher", "annex_a", "unchecked", "title"}
+FIRE_PUBLISHED = "2018-05-08"       # ΦΕΚ Α΄ 80/2018, the fire code.
+WEAK = {"matcher", "annex_a", "unchecked", "title", "chapter"}
 STATUS = {
     "confirmed": "the amending text names the article and Annex A of the Code lists it",
     "superseded": "a later confirmed amendment rewrote this text",
@@ -42,7 +44,14 @@ STATUS = {
     "annex_a": "one source only: Annex A lists it, and its Gazette text is not in the datasets",
     "title": "one source only: the title of the amending article names the article",
     "repeal": "a repeal",
+    "chapter": "the amending text names the article without its chapter: the chapter comes from the paragraph "
+               "numbers it cites. Check it",
 }
+NAMES = {"code": "Code", "nok": "NOK", "fire": "fire code"}
+# The fire code applies with acts of series Β of the Gazette, which the datasets do not hold.
+SERIES_B = ("Series Β of the Gazette is not in the datasets: the Fire Service provisions (Πυροσβεστικές Διατάξεις) "
+            "and the ministerial decisions that apply with the fire code are not here. Say so if the answer can "
+            "depend on them.")
 
 
 class QueryError(Exception):
@@ -62,12 +71,14 @@ class Store:
         return f"Gazette checked through {u['through']} (scanned {u['scanned_at']})"
 
     def doc(self, file: str) -> dict:
+        """Return a Gazette file. An issue that two datasets hold has a file in each: they are read as one."""
         if file not in self.docs:
             meta = self.index["files"].get(file)
             if not meta:
                 raise QueryError(f"{file} is not in the datasets. List the files with: regs.py info")
-            folder = self.index["datasets"][meta["dataset"]]["dir"]
-            self.docs[file] = json.loads((DATA / folder / f"{file}.json").read_text(encoding="utf-8"))
+            copies = [json.loads((DATA / self.index["datasets"][key]["dir"] / f"{file}.json").read_text(encoding="utf-8"))
+                      for key in [meta["dataset"], *meta.get("also", [])]]
+            self.docs[file] = merged(copies)
         return self.docs[file]
 
     def base(self, key: str) -> list[dict]:
@@ -80,7 +91,14 @@ class Store:
             ds = self.index["datasets"][scope]
             entry = self.index["articles"].get(ids.make(scope, ids.article(local)))
             if entry is None:
-                raise QueryError(f"{ids.make(scope, ids.article(local))} is not an article of the {scope} dataset. "
+                hint = ""
+                if scope == "fire" and ids.article(local).isdigit():     # The fire code numbers each chapter from 1.
+                    rest = local[len(ids.article(local)):]
+                    found = [ids.make(scope, c + local) for c in "ΑΒΓ"
+                             if ids.make(scope, c + ids.article(local)) in self.index["articles"]]
+                    hint = (f" Its articles start with the chapter letter: {' or '.join(found)}" if found and not rest
+                            else f" Its articles start with the chapter letter, e.g. fire:Α{local}") + "."
+                raise QueryError(f"{ids.make(scope, ids.article(local))} is not an article of the {scope} dataset.{hint} "
                                  f"Browse the articles with: regs.py toc {scope}")
             record = self.base(scope)[entry["at"]] if "at" in entry else None
             return {"scope": scope, "local": local, "file": ds["file"], "act": ds["act"], "fek": ds["fek"],
@@ -110,6 +128,24 @@ class Store:
             return []
         within = within or [where["local"]]
         return [p for p in a["paragraphs"] if any(ids.within(p["id"], w) for w in within)]
+
+
+def merged(copies: list[dict]) -> dict:
+    """Return one file from the copies of an issue: the articles of each act that any copy keeps, in order."""
+    doc = copies[0]
+    reasons = [m.group(1) for c in copies if (m := re.search(r"relevant to (.+?)\. The full text", c.get("extract", "")))]
+    if len(reasons) > 1:
+        doc["extract"] = f"Only the articles relevant to {' or '.join(dict.fromkeys(reasons))}. The full text is at the source URL."
+    for other in copies[1:]:
+        for act in other["acts"]:
+            same = next((a for a in doc["acts"] if a["act"] == act["act"]), None)
+            if same is None:
+                doc["acts"].append(act)
+                continue
+            have = {a["article"] for a in same["articles"]}
+            same["articles"] += [a for a in act["articles"] if a["article"] not in have]
+            same["articles"].sort(key=lambda a: (a["article"].startswith("Π-"), int(re.match(r"\d*", a["article"]).group() or 0)))
+    return doc
 
 
 class Out:
@@ -151,6 +187,8 @@ class Out:
 
 def paragraph_block(out: Out, store: Store, where: dict, p: dict, xrefs: dict | None = None):
     out(f"[{ids.make(where['scope'], p['id'])}] {store.cite(where, p['id'])}")
+    if p.get("printed"):
+        out(f"  The Gazette misprints its number as «{p['printed']}». The id follows the sequence of the numbers.")
     out(p["text"])
     refs = (xrefs or {}).get(ids.make(where["scope"], p["id"]))
     if refs:
@@ -184,14 +222,39 @@ def gaps(where: dict, gid: str, shown: list[dict]) -> list[str]:
     if a is None:
         return [f"{ids.make(where['scope'], ids.article(where['local']))} is not in the text of {where['file']}: an "
                 f"amendment added it. Read its text with: regs.py history {gid}"]
-    if a.get("missing_text"):
+    whole = where["local"] == ids.article(where["local"])
+    # A paragraph id shows the images and tables on the pages of its paragraphs, and the tables they name.
+    pages = None if whole or not shown else set(range(min(p["page"] for p in shown), max(p["page"] for p in shown) + 1))
+    named = {n for p in shown for n in re.findall(r"Πίνακ\w*\s+(\d+)", p["text"])}
+    if a.get("transcribed"):
+        notes.append(a["transcribed"] + " Check the diagram in the Gazette before relying on it.")
+    elif a.get("missing_text"):
         notes.append(f"The Gazette prints this article as an image (PDF pages {a.get('image_pages')}). The datasets "
                      "have no text for it: do not state its rule.")
     elif a.get("not_parsed"):
         notes.append(f"The parser did not find this article. See the Gazette PDF near page {a.get('page')}.")
-    elif a.get("image_pages"):
-        notes.append(f"Part of this article is an image in the Gazette (PDF pages {a['image_pages']}). "
-                     "The text below is incomplete.")
+    elif a.get("image_pages") and (pages is None or pages & set(a["image_pages"])):
+        images = a["image_pages"] if pages is None else sorted(pages & set(a["image_pages"]))
+        notes.append(f"Part of this article is an image, or a table without a text layer, in the Gazette (PDF pages "
+                     f"{images}). The text below is incomplete.")
+    if a.get("decoded"):
+        notes.append(a["decoded"])
+    ids_shown = {p["id"] for p in shown}
+    for t in a.get("tables", []):
+        # A table is shown with the paragraphs that hold it, or that name it. A table whose text the build
+        # did not place (a font without a text map) goes by its pages.
+        here = ids_shown & set(t["paragraphs"]) if t.get("paragraphs") else pages is None or pages & set(t["pages"])
+        if pages is not None and not here and t["table"] not in named:
+            continue
+        first, last = t["pages"][0], t["pages"][-1]
+        at = f"PDF page {first}" if first == last else f"PDF pages {first}-{last}"
+        name = f"Πίνακας {t['table']}" if t["table"] else "A table without a caption"
+        if t.get("order") == "rows":
+            notes.append(f"{name} ({at}): its rows are in the text below in order, but its column headings are "
+                         "not. Check the headings on the page before you state a value, and cite the table and its page.")
+        else:
+            notes.append(f"{name} ({at}): its cells are in the text below out of order. Do not state "
+                         "a value from the table: cite it and its page.")
     if a.get("cut"):
         notes.append(a["cut"])
     if not shown and not a.get("missing_text") and not a.get("not_parsed"):
@@ -245,6 +308,9 @@ def status_lines(store: Store, where: dict, gid: str) -> list[str]:
         out.append("Status: no amendment in the datasets.")
     if where["entry"].get("repealed_by"):
         out.append(f"Repealed by {where['entry']['repealed_by']}.")
+    if where["scope"] == "fire":                 # Annex A of the Code does not cover the fire code.
+        out.append(SERIES_B)
+        return out
     links = links_of(store, gid)
     if links:
         other = "nok" if where["scope"] == "code" else "code"
@@ -261,7 +327,8 @@ def cmd_info(store: Store, args, out: Out):
     idx = store.index
     counts = {}
     for meta in idx["files"].values():
-        counts[meta["dataset"]] = counts.get(meta["dataset"], 0) + 1
+        for key in [meta["dataset"], *meta.get("also", [])]:
+            counts[key] = counts.get(key, 0) + 1
     out("Datasets:")
     for key, ds in idx["datasets"].items():
         out(f"  {key:5} {ds['title']}, {ds['act'].lower()} (ΦΕΚ {ds['fek']}). In force {ds['in_force']}. "
@@ -288,8 +355,10 @@ def alternatives(term: str, groups: list[list[str]]) -> list[list[str]]:
 
 
 def tier(key: str, base: bool, article: dict) -> int:
-    """Search order: the general building code (Code Part Δ Section Ι), the rest of Part Δ, other Code articles,
-    later issues, the NOK, NOK amendments."""
+    """Search order: the general building code (Code Part Δ Section Ι), the rest of Part Δ and the fire code, other
+    Code articles, later issues, the NOK, NOK amendments."""
+    if key == "fire":
+        return 1 if base else 3
     if key == "code":
         if not base:
             return 3
@@ -300,10 +369,19 @@ def tier(key: str, base: bool, article: dict) -> int:
     return 4 if base else 5
 
 
+LOOKALIKE = str.maketrans("abehikmnoptxyz", "αβεηικμνορτχυζ")
+
+
+def searchable(text: str) -> str:
+    """Return text for matching: folded (ids.fold), with Latin letters that look Greek as Greek. The Gazette
+    mixes them («Α2-s1» with a Greek Α, «Cα»), and an engineer types either. The length does not change."""
+    return ids.fold(text).translate(LOOKALIKE)
+
+
 def snippet(text: str, stems: list[str]) -> str:
     if len(text) <= SNIPPET:
         return text
-    folded = ids.fold(text)
+    folded = searchable(text)
     at = min((folded.find(s) for s in stems if s in folded), default=0)
     lo = max(0, at - SNIPPET // 3)
     if lo:                                          # Start and end on a word boundary.
@@ -315,7 +393,7 @@ def snippet(text: str, stems: list[str]) -> str:
 
 
 def cmd_search(store: Store, args, out: Out):
-    terms = [ids.fold(t) for t in args.terms if t.strip()]
+    terms = [searchable(t) for t in args.terms if t.strip()]
     if not terms:
         raise QueryError("give at least one search stem")
     alts = [alternatives(t, store.index.get("synonyms", [])) for t in terms]
@@ -336,10 +414,10 @@ def cmd_search(store: Store, args, out: Out):
                 order += 1
                 scope = key if base else file
                 where = {"scope": scope, "local": a["article"], "act": act["act"], "fek": doc["fek"], "record": a}
-                ftitle = ids.fold(a["title"] or "")
+                ftitle = searchable(a["title"] or "")
                 found = []
                 for p in a["paragraphs"]:
-                    hay = ids.fold(p["text"])
+                    hay = searchable(p["text"])
                     matched = [next((alt for alt in alt_set if all(s in hay or s in ftitle for s in alt)), None)
                                for alt_set in alts]
                     if not all(matched):
@@ -364,7 +442,7 @@ def cmd_search(store: Store, args, out: Out):
     keys = sorted(hits, key=lambda k: (k[0], -hits[k][2], k[1]))
     total = sum(len(h[1]) for h in hits.values())
     out(f"{total} paragraphs in {len(hits)} articles match. The general building rules of the Code "
-        "(Part Δ Section Ι, articles 195-225) come first.")
+        "(Part Δ Section Ι, articles 195-225) come first, then the rest of Part Δ and the fire code.")
     for k in keys[:args.limit]:
         head, found, _ = hits[k]
         out("")
@@ -384,6 +462,9 @@ def cmd_read(store: Store, args, out: Out):
     gid = ids.normalize(args.id)
     where = store.locate(gid)
     shown = store.paragraphs(where)
+    a = where["record"]
+    if not shown and a and a["paragraphs"] and where["local"] != ids.article(where["local"]) and where["scope"] != "nok":
+        raise QueryError(f"{gid} is not a paragraph id of the text. {nearest(where)}")
     article_header(out, store, where)
     if where["entry"] is not None:
         for line in status_lines(store, where, gid):
@@ -396,9 +477,37 @@ def cmd_read(store: Store, args, out: Out):
         paragraph_block(out, store, where, p, xrefs)
 
 
+def nearest(where: dict) -> str:
+    """Return a hint for a paragraph id that the text does not have: the ids of its nearest existing part."""
+    local, have = where["local"], [p["id"] for p in where["record"]["paragraphs"]]
+    while local != ids.article(local):
+        local = re.split(r"[.#~@][^.#~@]*$", local)[0]
+        inner = [i for i in have if ids.within(i, local) and i != local]
+        if local in have or inner:
+            listed = ", ".join(ids.make(where["scope"], i) for i in ([local] if local in have else []) + inner[:12])
+            return (f"The nearest part that exists is {ids.make(where['scope'], local)}: {listed}"
+                    f"{' …' if len(inner) > 12 else ''}. Since version 2.1.0 the text after a clause that ends a "
+                    "sentence has the id of its paragraph («7.3#2», formerly «7.3.β#1»).")
+    return f"Read the article: regs.py read {ids.make(where['scope'], ids.article(where['local']))}"
+
+
 def commencement_of(store: Store, by: str, act: str) -> list[dict]:
     file = ids.split(by)[0]
     return [c for c in store.index.get("commencement", []) if ids.split(c["article"])[0] == file and c["act"] == act]
+
+
+def governing(rules: list[dict], by: str) -> dict:
+    """Return the commencement article that governs the article `by`.
+
+    An omnibus law closes each of its parts with a commencement article (ν. 4710/2020: article 11
+    for its tax part, article 65 for the rest). The one that governs an article is the first at or
+    after it, else the last.
+    """
+    def number(gid: str) -> int:
+        m = re.match(r"\d+", ids.article(ids.split(gid)[1]))
+        return int(m.group()) if m else 0
+    rules = sorted(rules, key=lambda c: number(c["article"]))
+    return next((c for c in rules if number(c["article"]) >= number(by)), rules[-1])
 
 
 def start_line(store: Store, p: dict) -> str:
@@ -407,11 +516,12 @@ def start_line(store: Store, p: dict) -> str:
     rules = commencement_of(store, p["by"], p["act"])
     if not rules:
         return "starts: no commencement article in the datasets. Check the act"
-    c = rules[0]
+    c = governing(rules, p["by"])
+    also = (f", or {c['from_issued']} counted from the date on the masthead" if c.get("from_issued") else "")
     if c["rule"] == "publication":
-        return f"starts: {c['from']} (the whole act, {c['article']})"
+        return f"starts: {c['from']}{also} (the whole act, {c['article']})"
     if c["rule"] == "publication-unless":
-        return (f"starts: {c['from']} unless the amending article sets another date "
+        return (f"starts: {c['from']}{also} unless the amending article sets another date "
                 f"(commencement article {c['article']})")
     return f"starts: read the commencement article {c['article']}"
 
@@ -424,11 +534,29 @@ def amendment_line(store: Store, p: dict) -> str:
     return f"{p.get('published') or 'date unknown'}  {p['act']}  {by}  {p['kind']}{restates}{targets}{status}"
 
 
+def restated_part(gid: str, texts: list[dict]) -> list[dict] | None:
+    """Return the paragraphs of an amendment that restates a whole article, cut to the part `gid` asks for.
+
+    The new text is quoted: "26.2~6.7#3" is text of paragraph 6.7 that ν. 4710/2020 art. 26 par. 2 gives
+    article 6 of the fire code. A fire code paragraph keeps its decimal number in the quote («6.7»),
+    others their number below the article. Return None for a whole article, or if no quoted text matches.
+    """
+    local = ids.split(gid)[1]
+    article = ids.article(local)
+    if local == article:
+        return None
+    m = ids.CHAPTERED.fullmatch(article)
+    want = m.group(2) + local[len(article):] if m else local[len(article) + 1:]
+    part = [q for q in texts if "~" not in q["id"]
+            or ids.within(q["id"].split("~", 1)[1], want)]
+    return part if any("~" in q["id"] for q in part) else None
+
+
 def cmd_history(store: Store, args, out: Out):
     gid = ids.normalize(args.id)
     where = store.locate(gid)
     if where["entry"] is None:
-        raise QueryError("history works on code: and nok: ids. Read a Gazette issue with: regs.py read <id>")
+        raise QueryError("history works on code:, nok: and fire: ids. Read a Gazette issue with: regs.py read <id>")
     pointers, hidden = pointers_of(where, gid, args.as_of)
     article_header(out, store, where)
     if args.as_of:
@@ -468,7 +596,21 @@ def cmd_history(store: Store, args, out: Out):
             source, article = ids.split(p["by"])
             by = store.locate(p["by"])
             locals_ = [ids.split(x)[1] for x in p.get("paragraphs", [])] or [article]
-            for q in store.paragraphs(by, locals_):
+            texts = full = store.paragraphs(by, locals_)
+            if p.get("restates") and (part := restated_part(gid, texts)) is not None:
+                out(f"Only the new text of {gid} and the amending words. All of it: regs.py history "
+                    f"{ids.make(where['scope'], ids.article(where['local']))}")
+                texts = part
+            quoted = [q["page"] for q in texts if "~" in q["id"]] or [q["page"] for q in texts]
+            after = full.index(texts[-1]) + 1 if texts else len(full)
+            end = full[after]["page"] if after < len(full) else max(quoted, default=0)   # A table before the next part.
+            images = sorted(pg for pg in (by["record"] or {}).get("image_pages", [])
+                            if quoted and min(quoted) <= pg <= max(end, max(quoted)))
+            if images:
+                out(f"Note: Part of this amending text is an image in the Gazette (PDF pages {images}): its tables "
+                    "and figures are not in the text below." + (" They replace those of the text as first published: "
+                                                                "do not state the old values." if p.get("restates") else ""))
+            for q in texts:
                 out("")
                 paragraph_block(out, store, by, q)
             related = related_of(store, source, by["act"], article)
@@ -501,7 +643,7 @@ def related_of(store: Store, file: str, act_label: str, article: str) -> list[st
 
 
 def cmd_changes(store: Store, args, out: Out):
-    since = args.since or (CODE_START if args.scope == "code" else "2012-04-09")
+    since = args.since or {"code": CODE_START, "nok": "2012-04-09", "fire": FIRE_PUBLISHED}[args.scope]
     rows = []
     for gid, entry in store.index["articles"].items():
         if ids.split(gid)[0] != args.scope:
@@ -510,7 +652,7 @@ def cmd_changes(store: Store, args, out: Out):
             if (p.get("published") or "") >= since and p.get("status") != "superseded":
                 rows.append((p.get("published") or "", gid, entry["title"], p))
     rows.sort(key=lambda r: (r[0], ids.article(ids.split(r[1])[1]).zfill(4)))
-    name = "Code" if args.scope == "code" else "NOK"
+    name = NAMES[args.scope]
     if not rows:
         out(f"No amendment of the {name} published from {since} in the datasets.")
         return
@@ -528,8 +670,9 @@ def cmd_trace(store: Store, args, out: Out):
     gid = ids.normalize(args.id)
     where = store.locate(gid)
     scope = where["scope"]
-    if scope not in ids.SCOPES:
-        raise QueryError("trace works on code: and nok: ids.")
+    if scope not in ("code", "nok"):
+        raise QueryError("trace works on code: and nok: ids: it follows Annex A of the Code, which does not "
+                         "cover the fire code.")
     out(f"{store.cite(where, where['local'])} — {(where['record'] or where['entry'])['title']}")
     nok = store.index["datasets"]["nok"]
     code_where = lambda c: store.locate(ids.make("code", ids.article(ids.split(c)[1])))  # noqa: E731
@@ -595,18 +738,48 @@ def cmd_toc(store: Store, args, out: Out):
                 (" (not a building rule)" if scopes.get(num) == "other" else "")
             out(f"  {gid}  {entry['title']}{note}")
         return
+    if scope == "fire":
+        doc = store.doc(store.index["datasets"]["fire"]["file"])
+        out(f"In force: {doc['in_force']}.")
+        if doc.get("commencement"):
+            c = doc["commencement"]
+            out(f"{c['article']} του π.δ. (PDF page {c['page']}): «{c['text']}»")
+        path = None
+        for a in doc["articles"]:
+            if section and not any(section in ids.fold(h) for h in a["path"]) and section not in ids.fold(a["title"]):
+                continue
+            if a["path"] != path:
+                path = a["path"]
+                out("")
+                out(path[0])
+                for ch in doc["chapters"]:
+                    if path[0].startswith(f"ΚΕΦΑΛΑΙΟ {ch['chapter']}΄"):
+                        for p in ch.get("text", []):
+                            out(f"  {p['text']}")
+            note = (" (no text: a table in a font without a text map)" if a.get("missing_text") else
+                    " (a diagram: its text is transcribed by hand)" if a.get("transcribed") else "")
+            out(f"  fire:{a['article']}  {a['title'] or a['label']}{note}")
+        return
     if ":" in scope:
-        raise QueryError("toc takes code, nok or a file id such as FEK-A-108-2026")
+        raise QueryError("toc takes code, nok, fire or a file id such as FEK-A-108-2026")
     doc = store.doc(scope)
-    out(f"{doc['title']} (ΦΕΚ {doc['fek']}, published {doc['published']})")
+    dated = f", dated {doc['issued']} on its masthead" if doc.get("issued") else ""
+    out(f"{doc['title']} (ΦΕΚ {doc['fek']}, published {doc['published']}{dated})")
     if doc.get("extract"):
         out(doc["extract"])
     for act in ids.acts(doc):
         out("")
         out(act["act"] + (f" — {act['title']}" if act.get("title") else ""))
+        starts = [a["article"] for a in act["articles"] if a.get("match") == "commencement"]
         for a in act["articles"]:
             if not section or section in ids.fold(a["title"]):
-                out(f"  {ids.make(scope, a['article'])}  {a['title']}  [{MATCH.get(a.get('match'), a.get('match') or '')}]")
+                why = MATCH.get(a.get("match"), a.get("match") or "")
+                if a.get("match") == "commencement" and len(starts) > 1:
+                    # An omnibus law has one per part: it governs the articles after the one before it.
+                    k = starts.index(a["article"])
+                    first = int(re.match(r"\d*", starts[k - 1]).group() or 0) + 1 if k else 1
+                    why = f"a commencement article of the act, for articles {first}-{a['article']}"
+                out(f"  {ids.make(scope, a['article'])}  {a['title']}  [{why}]")
 
 
 def date(text: str) -> str:
@@ -628,7 +801,7 @@ def main(argv=None) -> int:
     sub.add_parser("info", parents=[common], help="datasets, id grammar, commands")
     p = sub.add_parser("search", parents=[common], help="find paragraphs by word stems (all must match)")
     p.add_argument("terms", nargs="+")
-    p.add_argument("--in", dest="scope", choices=["code", "nok", "issues", "all"], default="all")
+    p.add_argument("--in", dest="scope", choices=["code", "nok", "fire", "issues", "all"], default="all")
     p.add_argument("--limit", type=int, default=8, help="articles to show")
     p = sub.add_parser("read", parents=[common], help="an article or paragraph, with its status")
     p.add_argument("id")
@@ -638,10 +811,10 @@ def main(argv=None) -> int:
     p.add_argument("--as-of", type=date, help="only amendments published by this date")
     p = sub.add_parser("changes", parents=[common], help="amendments published since a date")
     p.add_argument("--since", type=date)
-    p.add_argument("--in", dest="scope", choices=["code", "nok"], default="code")
+    p.add_argument("--in", dest="scope", choices=["code", "nok", "fire"], default="code")
     p = sub.add_parser("trace", parents=[common], help="NOK <-> Code links (Annex A)")
     p.add_argument("id")
-    p = sub.add_parser("toc", parents=[common], help="the articles of code, nok or an issue")
+    p = sub.add_parser("toc", parents=[common], help="the articles of code, nok, fire or an issue")
     p.add_argument("target")
     p.add_argument("--section", help="only sections or titles that contain this text")
     args = parser.parse_args(argv)

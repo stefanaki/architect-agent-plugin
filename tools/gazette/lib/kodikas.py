@@ -10,7 +10,7 @@ the only place that stores links between the two datasets.
 """
 import re
 
-from common import PDF, fek_url, pdftotext, write_json
+from common import PDF, fek_url, issued, pdftotext, write_json
 from convert import paragraphs_json
 from datasets import CODE, NOK, heading_level
 import annex_a, discover, extract
@@ -93,7 +93,7 @@ def write_text():
             "paragraphs": paragraphs_json(a)})
     write_json(CODE.json_path(CODE.main), {
         "title": CODE.title, "fek": "Α΄ 88/2026", "file": CODE.main, "act": f"Ν. {CODE.law}",
-        "published": issue["published"], "source": fek_url(CODE.number, CODE.year), "search_id": issue["search_id"],
+        "published": issue["published"], **issued(issue), "source": fek_url(CODE.number, CODE.year), "search_id": issue["search_id"],
         "pages": npages, "ratified_by": "Άρθρο πρώτο του ν. 5306/2026",
         "repeals": "The provisions listed in Annex A (Code article 477)",
         "articles": records})

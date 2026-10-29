@@ -3,8 +3,9 @@
 An agent plugin for the daily work of architecture engineers in Greece. It grows module by
 module. The first modules are:
 
-- **Regulations.** Find, quote and cite the Greek building regulations with every amendment
-  from the Government Gazette. It works offline from bundled datasets.
+- **Regulations.** Find, quote and cite the Greek building regulations and the fire code
+  (π.δ. 41/2018) with every amendment from the Government Gazette. It works offline from bundled
+  datasets.
 - **Rhino.** Inspect, model, edit and verify geometry in an open Rhino 8 model.
 - **Setup.** Install the prerequisite, check the regulations and connect Rhino.
 

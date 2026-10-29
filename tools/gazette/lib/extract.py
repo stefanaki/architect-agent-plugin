@@ -20,7 +20,7 @@ The parser reads the quoted act as its own act of kind «κώδ.» with the numb
 ratifying law. The quoted act starts at its first heading, which has the other numbering
 style, and ends at the next heading of the ratifying law.
 """
-import html, os, re, unicodedata
+import html, os, re, subprocess, unicodedata
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -44,6 +44,7 @@ class Para:
     text: str
     page: int
     quoted: bool = False       # The paragraph starts inside quoted text «...».
+    at: tuple = ()             # (left, top) of its first line on the page, in points.
 
 
 @dataclass
@@ -117,8 +118,12 @@ GLYPH = re.compile(r"[\u0100-\u02af\u03d8-\u03ef\u0400-\u04ff]")
 BASIC_GREEK = re.compile(r"[\u0386-\u03ce]")
 COMBINING = re.compile(r"[\u0300-\u036f]")
 BROKEN_MIN = 20                # Fewer broken words than this on a page: keep all words.
-TOUCH = 0.5                    # Points. Two words closer than this are one word that pdftotext split.
+TOUCH = 0.15                   # Points. Two words closer than this are one word that pdftotext split. Tightly
+                               # justified lines leave 0.2-0.5 between words (ΦΕΚ Α΄ 80/2018, page 22).
+SUPERSCRIPT_GAP = 0.5           # Points. A raised, smaller word this close is a superscript of the word before.
+SUPERSCRIPT_SIZE = 0.8          # A superscript is less than this fraction of the height of the word before.
 MIN_COLUMN_LINE = 0.2          # Fraction of the page width. Shorter lines do not set the right column edge.
+LEFT_END_SLACK = 10            # Points past the middle of the page that a line of the left column can end.
 
 
 def article_number(label: str) -> tuple[str, bool]:
@@ -175,12 +180,35 @@ def _merge_fragments(groups):
     return out
 
 
+def _split_at_middle(ws, width: float) -> list:
+    """Split a line whose words cross the gap between the two columns.
+
+    Some text layers put the words of both columns at one height into one line (ΦΕΚ Α΄ 130/2020,
+    page 166): «... του άρθρου» and «για κάθε κτίριο ...» with a gap of 14 points at the middle.
+    The gap between two columns holds the middle of the page, is wider than FRAGMENT_GAP, and is
+    wider than twice the line's usual word space: spaced-out text can have word spaces of 11 points
+    (ΦΕΚ Α΄ 142/2025, page 119).
+    """
+    gaps = [b[0] - a[2] for a, b in zip(ws, ws[1:])]
+    usual = sorted(gaps)[(len(gaps) - 1) // 2] if gaps else 0          # The lower median.
+    for k, gap in enumerate(gaps, 1):
+        if gap > max(FRAGMENT_GAP, 2 * usual) and ws[k - 1][2] < width / 2 < ws[k][0]:
+            return [ws[:k], ws[k:]]
+    return [ws]
+
+
 def _line_text(ws) -> str:
     """Join the words of one line. Two words that touch are one word. pdftotext splits some words."""
     out = ws[0][4]
     for a, b in zip(ws, ws[1:]):
-        out += ("" if abs(b[0] - a[2]) < TOUCH else " ") + b[4]
+        out += ("" if abs(b[0] - a[2]) < TOUCH or superscript(a, b) else " ") + b[4]
     return out
+
+
+def superscript(a, b) -> bool:
+    """Return True if word b is a superscript of word a: raised, smaller and within SUPERSCRIPT_GAP
+    («6» + «ον» -> «6ον», ΦΕΚ Α΄ 142/2025)."""
+    return 0 <= b[0] - a[2] < SUPERSCRIPT_GAP and b[1] < a[1] and (b[3] - b[1]) < SUPERSCRIPT_SIZE * (a[3] - a[1])
 
 
 def clean_word(text: str) -> str:
@@ -206,6 +234,7 @@ def lines(pdf: Path) -> list[Line]:
         if bad:
             raw = _merge_fragments([[w for w in ws if round(w[3] - w[1], 1) not in bad or GREEK_CHAR.search(w[4])]
                                     for ws in raw])
+        raw = [part for ws in raw for part in _split_at_middle(ws, W)]
         ls = []
         for ws in raw:
             if not ws:
@@ -222,8 +251,14 @@ def lines(pdf: Path) -> list[Line]:
             if t and y1 >= H * HEADER_ZONE:
                 ls.append(Line(p, x0, y0, x1, y1, t))
         # The right column starts at the left edge of the lines in the right half of the page.
-        # A short line (a table cell, a centred heading) does not set the edge.
+        # A short line (a table cell, a centred heading) does not set the edge. Nor does a line that
+        # starts before the lines of the left column end: a table cell across the gap between the
+        # columns (ΦΕΚ Α΄ 80/2018, page 45).
         right = [l.x0 for l in ls if l.x0 > W / 2 - 5 and l.x1 - l.x0 > W * MIN_COLUMN_LINE]
+        left_ends = Counter(round(l.x1) for l in ls if l.x0 < W / 2 - 5 and l.x1 < W / 2 + LEFT_END_SLACK)
+        if left_ends:
+            gap = left_ends.most_common(1)[0][0]
+            right = [x for x in right if x > gap] or right
         right = right or [l.x0 for l in ls if l.x0 > W / 2 - 5]
         rstart = min(right) if right else W
         for l in ls:
@@ -417,19 +452,20 @@ def parse(pdf: Path) -> list[Act]:
 
 
 def parse_lines(ls: list[Line], act: Act | None = None, toc: dict | None = None,
-                margins: dict | None = None) -> list[Act]:
+                margins: dict | None = None, starts=None) -> list[Act]:
     """Parse lines into acts, articles and paragraphs.
 
     Without `act`, the lines are a whole issue. With `act`, the lines are the body
     of that act, for example a code that a ratifying law quotes. `toc` and `margins`
     replace the contents and text edges that the function finds in the lines.
     Give them from all lines of the issue when `ls` is only a part of a page.
+    `starts(text, article number)` returns True for a line that starts a paragraph whatever its indent.
     """
     margins = _margins(ls) if margins is None else margins
     toc = _toc(ls) if toc is None else toc
     acts: list[Act] = [act] if act else []
     art = None
-    buf, buf_page, inside = "", 0, False
+    buf, buf_page, buf_at, inside = "", 0, (), False
     title_mode = None            # None | "center" | "upper" | x0 of the heading
     head_x = None                # x0 of the current multi-line section heading
     act_title_open = False
@@ -444,7 +480,7 @@ def parse_lines(ls: list[Line], act: Act | None = None, toc: dict | None = None,
         nonlocal buf, inside
         if not buf:
             return
-        p = Para(buf, buf_page, quoted=inside)
+        p = Para(buf, buf_page, quoted=inside, at=buf_at)
         inside = _quote_state(inside, buf)
         # A paragraph without a letter or a digit is not text. A paragraph without a Greek letter
         # and with symbols of a broken font is not text. Do not keep them.
@@ -613,9 +649,10 @@ def parse_lines(ls: list[Line], act: Act | None = None, toc: dict | None = None,
             # Upper-case lines that no article follows are body text (e.g. «Ε) ΣΙΝΑΪΤΙΚΗ ΑΔΕΛΦΟΤΗΣ»).
             art.paras.extend(Para(h, l.page, quoted=inside) for h in pending_heads)
             pending_heads = []
-        if PARA_INDENT[0] < indent < PARA_INDENT[1] or not buf:
+        if PARA_INDENT[0] < indent < PARA_INDENT[1] or not buf or \
+                (starts is not None and art is not None and starts(text, art.num)):
             flush()
-            buf_page = l.page
+            buf_page, buf_at = l.page, (l.x0, l.y0)
         buf = join(buf, text)
     flush()
     return acts
@@ -631,6 +668,37 @@ def broken_pages(pdf: Path) -> set[int]:
         words = [(*map(float, w[:4]), html.unescape(w[4])) for w in _WORD.findall(m.group(3))]
         if _broken_heights(words):
             out.add(p)
+    return out
+
+
+MIN_IMAGE = 50                       # Points. Smaller images are logos and stamps, not figures or tables.
+
+
+def image_pages(pdf: Path) -> set[int]:
+    """Return the pages with a figure, a scanned page or a table printed as an image (`pdfimages -list`)."""
+    out = subprocess.run(["pdfimages", "-list", str(pdf)], capture_output=True, text=True, check=True).stdout
+    pages = set()
+    for row in out.splitlines()[2:]:
+        f = row.split()        # page num type width height color comp bpc enc interp object generation x-ppi y-ppi ...
+        if len(f) > 13 and f[2] == "image" and float(f[12]) and float(f[13]) and \
+                min(float(f[3]) / float(f[12]), float(f[4]) / float(f[13])) * 72 >= MIN_IMAGE:
+            pages.add(int(f[0]))
+    return pages
+
+
+def merged_column_pages(pdf: Path) -> set[int]:
+    """Return the pages where the text layer puts words of both columns into one line (see _split_at_middle).
+
+    On these pages plain `pdftotext` reads the two columns as one, so it is not a reliable reference.
+    """
+    out = set()
+    for p, m in enumerate(_PAGE.finditer(pdftotext(pdf, "-bbox-layout")), 1):
+        W = float(m.group(1))
+        for l in _LINE.finditer(m.group(3)):
+            ws = [(*map(float, w[:4]), w[4]) for w in _WORD.findall(l.group(5))]
+            if len(_split_at_middle(ws, W)) > 1:
+                out.add(p)
+                break
     return out
 
 

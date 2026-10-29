@@ -1,8 +1,10 @@
 """Lookups for the query script, computed once at build time and stored in index.json.
 
-  xrefs         internal references of the two base texts: «της παρ. 5 του άρθρου 210» in code:211.3
-                gives {"code:211.3": ["code:210.5"]}. References to other laws are left out.
-  glossary      the defined terms of the Code (code:197) and the NOK (nok:2): term, synonym, global id
+  xrefs         internal references of the base texts: «της παρ. 5 του άρθρου 210» in code:211.3
+                gives {"code:211.3": ["code:210.5"]}. References to other laws are left out. The fire code
+                has its own forms: «της παρ. 5.3.7.3 του άρθρου 5 του Κεφαλαίου Α΄», «στο Παράρτημα Γ».
+  glossary      the defined terms of the Code (code:197), the NOK (nok:2) and the fire code (fire:Α3):
+                term, synonym, global id
   synonyms      groups of search stems that mean the same: the glossary synonyms («μπαλκόνι») and
                 SYNONYMS below. Each alternative is one or more stems, all of which must match.
   commencement  for each amending act: its commencement article and, where the text is regular,
@@ -41,6 +43,8 @@ DEFINITION = re.compile(r"^(\d+[Α-Ω]?)\.\s*«([^»(]{2,120}?)\s*(?:\(([^)]{2,6
 DEFINITION_ANY = re.compile(r"^(\d+[Α-Ω]?)\.\s*«([^»]{2,160})»\s*:")
 # The NOK has no quotes: «5. Ανοικτός Εξώστης (μπαλκόνι) είναι ...».
 DEFINITION_NOK = re.compile(r"^(\d+[Α-Ω]?)\.\s*([^.:«»()]{2,100}?)\s*(?:\(([^)]{2,60})\))?\s+(?:είναι|νοείται|νοούνται)\b")
+# The fire code has no numbers: «Αντίδραση στη φωτιά (πυραντίδραση): Συμπεριφορά ...».
+DEFINITION_FIRE = re.compile(r"^()([Α-ΩΆ-Ώ][^.:«»()]{1,80}?)\s*(?:\(([^)]{2,60})\))?\s*:\s")
 
 
 def _range(nums: str) -> list[str]:
@@ -76,10 +80,63 @@ def _external(text: str, end: int) -> bool:
     return (bool(EXTERNAL.match(tail)) or bool(SAME_ACT.match(tail))) and not THIS_CODE.match(tail)
 
 
+# The fire code. «της παρ. 5.3.7.3 του άρθρου 5 του Κεφαλαίου Α΄», «της παρ. 4.2.2 του άρθρου 4»: the decimal
+# number starts with its article. Without a chapter, the reference is to the chapter of the paragraph.
+FIRE_PARA_REF = re.compile(r"(?:παρ\.|παράγραφο[υς]?)\s*(\d+(?:\.\d+)+)\.?(?:\s+του\s+άρθρου\s+\d+)?"
+                           r"(?:\s+(?:του\s+)?(?:Κεφαλαίου|κεφαλαίου|κεφ\.)\s+([ΑΒΓ])(?![^\W\d_]))?")
+# «του άρθρου 4 του Κεφαλαίου Α΄», «τα άρθρα 9 και 10 του Κεφαλαίου Β», «του άρθρου 4 του παρόντος κεφαλαίου»,
+# «του άρθρου 5 των Γενικών Διατάξεων» (Chapter Α).
+FIRE_ARTICLE_REF = re.compile(
+    r"(?:άρθρου|άρθρο|άρθρα|άρθρων)\s+(\d+(?:\s*(?:,|και|έως(?:\s+και)?)\s*\d+)*)\s+(?:του\s+|των\s+)?"
+    r"(?:(?:Κεφαλαίου|κεφαλαίου|κεφ\.)\s+([ΑΒΓ])(?![^\W\d_])|(παρόντος\s+[Κκ]εφαλαίου)|(Γενικών\s+Διατάξεων))")
+FIRE_ANNEX_REF = re.compile(r"Παράρτημ(?:α|ατος)\s+([ΑΒΓΔ])(?![^\W\d_])")
+# A chapter or article of another act: «κεφ. Α΄ του προϊσχύοντος π.δ. 71/1988».
+FIRE_EXTERNAL = re.compile(r"[΄’']?\s*(?:του|της)\s+(?:προϊσχύοντος\s+)?(?:π\.\s?δ\.|ν\.|κοινής|υπουργικής)")
+
+
+def fire_xrefs(articles: list[dict]) -> dict[str, list[str]]:
+    """Return {paragraph gid: [referenced gids]} for the fire code."""
+    known = {a["article"]: {p["id"] for p in a["paragraphs"]} for a in articles}
+    out = {}
+
+    def resolve(article: str, decimal: str = "") -> str | None:
+        if article not in known:
+            return None
+        parts = decimal.split(".")[1:]
+        for k in range(len(parts), 0, -1):      # The longest part of the number that the text has.
+            if (gid := ".".join([article, *parts[:k]])) in known[article]:
+                return ids.make("fire", gid)
+        return ids.make("fire", article)
+
+    for a in articles:
+        chapter = a["article"][0]
+        for p in a["paragraphs"]:
+            text, refs = p["text"], []
+            for m in FIRE_PARA_REF.finditer(text):
+                if not FIRE_EXTERNAL.match(text, m.end()):
+                    refs.append(resolve(f"{m.group(2) or chapter}{m.group(1).split('.')[0]}", m.group(1)))
+            for m in FIRE_ARTICLE_REF.finditer(text):
+                if FIRE_EXTERNAL.match(text, m.end()):
+                    continue
+                target = m.group(2) or ("Α" if m.group(4) else chapter)
+                refs += [resolve(f"{target}{n}") for n in _range(m.group(1))]
+            for m in FIRE_ANNEX_REF.finditer(text):
+                if not FIRE_EXTERNAL.match(text, m.end()):
+                    refs.append(resolve(f"Π-{m.group(1)}"))
+            me = ids.make("fire", p["id"])
+            refs = [r for r in dict.fromkeys(refs) if r and not ids.related(r, me)]
+            if refs:
+                out[me] = refs
+    return out
+
+
 def xrefs(base: dict[str, list[dict]]) -> dict[str, list[str]]:
     """Return {paragraph gid: [referenced gids]} for the base texts. `base` is {dataset key: articles}."""
     out = {}
     for key, articles in base.items():
+        if key == "fire":
+            out.update(fire_xrefs(articles))
+            continue
         known = {a["article"]: {ids.make(key, p["id"]) for p in a["paragraphs"]} for a in articles}
         for a in articles:
             for p in a["paragraphs"]:
@@ -102,13 +159,15 @@ def xrefs(base: dict[str, list[dict]]) -> dict[str, list[str]]:
 
 
 def glossary(base: dict[str, list[dict]]) -> list[dict]:
-    """Return the defined terms: code:197 (Code Part Δ definitions) and nok:2 (NOK definitions)."""
+    """Return the defined terms: code:197 (Code Part Δ definitions), nok:2 (NOK definitions) and fire:Α3
+    (fire code definitions)."""
     out = []
-    for key, article in (("code", "197"), ("nok", "2")):
-        a = next((x for x in base[key] if x["article"] == article), None)
+    for key, article in (("code", "197"), ("nok", "2"), ("fire", "Α3")):
+        a = next((x for x in base.get(key, []) if x["article"] == article), None)
         for p in (a or {}).get("paragraphs", []):
             text = p["text"]
-            if (m := DEFINITION.match(text) or DEFINITION_ANY.match(text) or DEFINITION_NOK.match(text)):
+            rules = (DEFINITION_FIRE,) if key == "fire" else (DEFINITION, DEFINITION_ANY, DEFINITION_NOK)
+            if (m := next((r.match(text) for r in rules if r.match(text)), None)):
                 entry = {"term": m.group(2).strip(), "id": ids.make(key, p["id"])}
                 if m.re is not DEFINITION_ANY and m.group(3):
                     entry["also"] = m.group(3).strip()
@@ -149,21 +208,28 @@ def commencement(docs: list[dict]) -> list[dict]:
     `from` unless a provision says otherwise: check the amending article), or "text" (read the
     article; `from` is absent).
     """
-    out = []
+    out, seen = [], set()
     for doc in docs:
         for act in doc.get("acts", []):
             for a in act["articles"]:
-                if a.get("match") != "commencement":
+                # An issue that two datasets hold has the same commencement article in both files.
+                if a.get("match") != "commencement" or (doc["file"], a["article"]) in seen:
                     continue
-                first = re.split(r"(?<=[.])\s+(?=[Α-ΩΆ-Ώ0-9])", " ".join(p["text"] for p in a["paragraphs"][:2]))[0]
-                first = re.sub(r"^\d+\.\s*", "", first)
+                seen.add((doc["file"], a["article"]))
+                text = re.sub(r"^\d+\.\s*", "", " ".join(p["text"] for p in a["paragraphs"][:2]))
+                first = re.split(r"(?<=[.])\s+(?=[Α-ΩΆ-Ώ0-9])", text)[0]
+                # «1. Η ισχύς ... αρχίζει από τη δημοσίευση» and more numbered paragraphs: exceptions.
+                more = any(re.match(r"[2-9]\.", p["text"]) for p in a["paragraphs"][1:])
                 entry = {"article": ids.make(doc["file"], a["article"]), "act": act["act"], "rule": "text"}
                 if PUBLICATION.search(first):
                     start = datetime.date.fromisoformat(doc["published"])
                     if (m := DAYS_AFTER.search(first)):
                         start += datetime.timedelta(days=int(m.group(1) or m.group(2)))
-                    entry["rule"] = "publication-unless" if UNLESS.search(first) else "publication"
+                    entry["rule"] = "publication-unless" if UNLESS.search(first) or more else "publication"
                     entry["from"] = start.isoformat()
+                    if doc.get("issued"):            # The masthead date is not the release date.
+                        lag = datetime.date.fromisoformat(doc["published"]) - datetime.date.fromisoformat(doc["issued"])
+                        entry["from_issued"] = (start - lag).isoformat()
                 out.append(entry)
     return out
 

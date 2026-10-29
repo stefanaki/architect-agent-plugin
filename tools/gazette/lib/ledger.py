@@ -26,6 +26,11 @@ The NOK pointers stop at the Code (8 June 2026).
 
 Code pointers. There is no second source, so they have no status.
 
+Fire code pointers. The fire code numbers its articles from 1 in each chapter, so a pointer must name
+the chapter: «του άρθρου 4 του Κεφαλαίου Α΄ του π.δ. 41/2018». An amending text that names no chapter
+(«της παρ. 6.7 του άρθρου 6 του π.δ. 41/2018») gets the chapter whose article has the cited paragraph,
+or Chapter Α, and the status `chapter`. A pointer whose chapter the text names has no status.
+
 Each pointer of both datasets has `kind` (amend or repeal) and can have:
   targets      the provisions that the sentence names: "27" (whole article), "27.4", "11.6.ιδ". Best effort.
   restates     true if the amending article gives the full new text of the article
@@ -33,7 +38,7 @@ Each pointer of both datasets has `kind` (amend or repeal) and can have:
 import re
 
 from common import num_key, read_json
-from datasets import CODE, CODE_PUBLISHED, NOK, Dataset
+from datasets import CODE, CODE_PUBLISHED, FIRE, FIRE_CHAPTERS, NOK, Dataset
 import annex_a
 
 NOK_NAME = (r"(?:(?:του\s+|στον?\s+)?(?:ν\.|Ν\.|νόμου)\s*4067\s*/\s*2012|(?:του\s+)?Ν\.\s?Ο\.\s?Κ\."
@@ -346,6 +351,79 @@ def build_code():
     return articles
 
 
+# «του άρθρου 6 του π.δ. 41/2018», «του άρθρου 5 του Κεφαλαίου Β΄ του π.δ. 41/2018 (Α΄ 80)».
+FIRE_TARGET = re.compile(rf"άρθρ(?:ο|ου|α|ων)\s+{NUMS}\s+(?:του\s+Κεφαλαίου\s+(?P<chapter>[ΑΒΓ])[΄’']?\s+)?"
+                         r"(?:του\s+|στο\s+)?(?:π\.\s?δ\.|Π\.\s?Δ\.|προεδρικού\s+διατάγματος)\s*41\s*/\s*2018")
+FIRE_PARA = re.compile(r"(?:παρ\.|παράγραφο[υς]?)\s*(\d+(?:\.\d+)+)")
+
+
+def fire_chapter(number: str, paras: list[str], known: dict[str, set[str]]) -> tuple[str, bool]:
+    """Return (the chapter of a fire code article that a text names without its chapter, True).
+
+    The chapter is the one whose article has every cited paragraph («παρ. 6.7»: only Α6 has 6.7). With no
+    such paragraph, it is Chapter Α, the general provisions.
+    """
+    fits = [c for c in FIRE_CHAPTERS if f"{c}{number}" in known
+            and all(f"{c}{number}.{q}" in known[f"{c}{number}"] for q in paras)]
+    return (fits[0] if len(fits) == 1 else "Α"), True
+
+
+def build_fire():
+    """Return {article: {"amended_in": [pointer]}} for the fire code, from the issues of its dataset."""
+    known = {a["article"]: {p["id"] for p in a["paragraphs"]} for a in FIRE.load(FIRE.main)["articles"]}
+    found = {}
+    for path in FIRE.json_paths():
+        if path.stem == FIRE.main:
+            continue
+        doc = read_json(path)
+        for act in doc["acts"]:
+            for a in act["articles"]:
+                if a.get("match") not in ("number", "name"):
+                    continue
+                for pid, text in [("", a["title"])] + [(p["id"], p["text"]) for p in a["paragraphs"]]:
+                    flat = re.sub(r"\s+", " ", text)
+                    for m in FIRE_TARGET.finditer(flat):
+                        if not (kind := amending(flat, m.start(), m.end(), not pid)):
+                            continue
+                        before, after = sentence_around(flat, m.start(), m.end())
+                        # «της παρ. 6.7 του άρθρου 6»: a decimal number starts with its article, «6.7» -> "7".
+                        decimals = [x.split(".", 1) for x in FIRE_PARA.findall(before[-80:])]
+                        for n in expand(m.group(1)):
+                            if not 1 <= int(re.match(r"\d+", n).group()) <= FIRE.last_article:
+                                continue
+                            mine = [q for a_, q in decimals if a_ == n]
+                            chapter, guessed = (m.group("chapter"), False) if m.group("chapter") else \
+                                fire_chapter(n, mine, known)
+                            article = f"{chapter}{n}"
+                            if article not in known:
+                                continue
+                            e = found.setdefault(article, {}).setdefault((path.stem, a["article"]), {
+                                "act": act["act"], "published": doc["published"], "paragraphs": set(),
+                                "kinds": set(), "targets": set(), "restates": False, "guessed": False})
+                            e["kinds"].add("title" if not pid else kind)
+                            e["guessed"] |= guessed
+                            if not pid:
+                                continue
+                            e["paragraphs"].add(pid)
+                            e["targets"] |= {f"{article}.{q}" for q in mine} or {article}
+                            e["restates"] |= bool(re.search(r"άρθρο(?:\s+\d+)?\s+διαμορφώνεται", after))
+    articles = {}
+    for n in sorted(found, key=num_key):
+        pointers = []
+        for (source, article), e in sorted(found[n].items(), key=lambda kv: (kv[1]["published"], kv[0])):
+            # A restated article is the target as a whole: its new text replaces every paragraph.
+            targets = [n] if e["restates"] else sorted(e["targets"], key=num_key)
+            pointers.append({"source": source, "act": e["act"], "article": article, "published": e["published"],
+                             **({"paragraphs": sorted(e["paragraphs"])} if e["paragraphs"] else {}),
+                             **({"targets": targets} if targets else {}), **({"restates": True} if e["restates"] else {}),
+                             "kind": "repeal" if "repeal" in e["kinds"] else "amend",
+                             **({"status": "chapter"} if e["guessed"] else {})})
+        articles[n] = {"amended_in": pointers}
+    print(f"   Fire code pointers: {len(articles)} articles amended, "
+          f"{sum(len(a['amended_in']) for a in articles.values())} pointers")
+    return articles
+
+
 def build() -> dict:
-    """Return {"nok": {article: entry}, "code": {article: entry}}."""
-    return {"nok": build_nok(), "code": build_code()}
+    """Return {"nok": {article: entry}, "code": {article: entry}, "fire": {article: entry}}."""
+    return {"nok": build_nok(), "code": build_code(), "fire": build_fire()}
