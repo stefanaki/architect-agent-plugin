@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "architect-agent",
+  "version": "2.0.0",
+  "description": "An assistant for the daily work of architecture engineers in Greece. First modules: Greek building regulations and Rhino modelling.",
+  "author": {"name": "stefanaki", "url": "https://github.com/stefanaki"},
+  "homepage": "https://github.com/stefanaki/architect-agent-plugin",
+  "repository": "https://github.com/stefanaki/architect-agent-plugin",
+  "license": "MIT",
+  "keywords": ["architecture", "greece", "building-regulations", "rhino", "cad"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Architect Agent",
+        "shortDescription": "An assistant for architects in Greece",
+        "longDescription": "Helps architecture engineers in Greece with their daily work. It looks up and cites Greek building regulations with their amendments from the Government Gazette, and works with open Rhino models. More areas of practice will follow.",
+        "developerName": "stefanaki",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": [
+          "Set up Architect Agent on my computer.",
+          "How far may an open balcony project beyond the building line?",
+          "What changed in the building rules since June 2026?"
+        ],
+        "logo": "./assets/icon.svg",
+        "composerIcon": "./assets/icon.svg"
+      }
+    }
+  }
+}

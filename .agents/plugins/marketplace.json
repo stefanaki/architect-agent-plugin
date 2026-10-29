@@ -1,0 +1,20 @@
+{
+  "name": "architect-engineers",
+  "interface": {
+    "displayName": "Architect Engineers"
+  },
+  "plugins": [
+    {
+      "name": "architect-agent",
+      "source": {
+        "source": "local",
+        "path": "./plugins/architect-agent"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

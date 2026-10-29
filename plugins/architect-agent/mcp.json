@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "rhino": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["rhinomcp==0.4.1.1"],
+      "cwd": "${PLUGIN_ROOT}"
+    }
+  }
+}

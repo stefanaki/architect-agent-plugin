@@ -1,0 +1,21 @@
+diff --git a/plugin/RhinoMCPPlugin.cs b/plugin/RhinoMCPPlugin.cs
+index 5c33d56..d8ad3e4 100644
+--- a/plugin/RhinoMCPPlugin.cs
++++ b/plugin/RhinoMCPPlugin.cs
+@@ -21,6 +21,16 @@ namespace RhinoMCPPlugin
+         ///<summary>Gets the only instance of the RhinoMCPPlugin plug-in.</summary>
+         public static RhinoMCPPlugin Instance { get; private set; }
+ 
++        // Autostart: load with Rhino and start the listener immediately, so the
++        // agent can connect without the user typing mcpstart.
++        public override Rhino.PlugIns.PlugInLoadTime LoadTime => Rhino.PlugIns.PlugInLoadTime.AtStartup;
++
++        protected override Rhino.PlugIns.LoadReturnCode OnLoad(ref string errorMessage)
++        {
++            RhinoMCPServerController.StartServer();
++            return Rhino.PlugIns.LoadReturnCode.Success;
++        }
++
+         // You can override methods here to change the plug-in behavior on
+         // loading and shut down, add options pages to the Rhino _Option command
+         // and maintain plug-in wide options in a document.

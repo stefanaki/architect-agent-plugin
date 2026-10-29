@@ -1,0 +1,24 @@
+[project]
+name = "architect-agent-plugin"
+version = "0"
+description = "Maintainer tooling of the Architect Agent plugin: the Gazette harness, the Rhino package build and tests."
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+# The codebase imports several modules on one line, names short lambdas, and calls a text line `l`.
+ignore = ["E401", "E731", "E741"]

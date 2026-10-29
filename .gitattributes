@@ -1,0 +1,3 @@
+# Keep the CRLF line endings upstream uses, so the patch applies byte for byte.
+tools/rhino/*.patch -text
+*.yak binary
